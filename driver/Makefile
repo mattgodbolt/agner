@@ -10,5 +10,6 @@ clean:
 	rm -f MSRdrv.o
 	rm -f MSRdrv.mod.*
 	rm -f linux.mdl
-	rm -f Modules.symvers
+	rm -f Module.symvers
+	rm -f modules.order
 
