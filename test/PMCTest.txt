@@ -1,0 +1,293 @@
+                    PMCTest.txt                    2012-03-02 Agner Fog
+
+                    Multi-threaded PMC Test program
+
+This program is intended for optimizing a little piece of code written in 
+C++ or assembly.
+
+The code to test will be executed a fixed number of times and the 
+test results will be output for each repetition. This program measures 
+how many clock cycles the code to test takes in each repetition. 
+Furthermore, it is possible to set a number of Performance Monitor Counters
+(PMC) to count the number of micro-operations (uops), cache misses, 
+branch mispredictions, etc.
+It is possible to run the same code in multiple threads simultaneously in
+order to test resource contention between threads.
+
+The setup of the Performance Monitor Counters is microprocessor-specific.
+The specifications for possible performance monitor counters for each 
+microprocessor family is defined in the table CounterDefinitions in the 
+bottom of the file PMCTestA.cpp. It is possible to make additions to this
+table.
+
+(c) Copyright 2000 - 2012 by Agner Fog. GNU General Public License www.gnu.org/licenses
+
+
+System requirements:
+--------------------
+Windows 2000 or later, or Linux, 32 or 64 bit.
+Microsoft, Gnu or Intel C++ compiler.
+MASM, YASM, NASM or JWasm assembler.
+
+
+Instructions:
+-------------
+PMCTest uses a kernel mode driver for getting access to the performance
+monitor counters (PMCs). There are three versions of the driver:
+* MSRDriver32.sys is used in 32-bit Windows systems.
+* MSRDriver64.sys is used in 64-bit Windows systems, even if the test 
+  program runs in 32 bit mode.
+* MSRdrv is used in Linux systems, both 32 and 64 bit.
+
+The test program consists of two modules, A and B. The A module, written
+in C++ (PMCTestA.cpp), contains interface to the driver, thread creation,
+locking each thread to a specific CPU core, a table of PMC defitions for
+different microprocessors, and output of the results. All OS-dependent
+functions are in the files PMCTestWin.h and PMCTestLinux.h, which are
+included conditionally from PMCTestA.cpp.
+
+The B module is where you put in the piece of code to test. The test code
+is repeated in a loop that reads the counters before and after each 
+execution of the test code. A dummy loop without the test code measures
+the overhead counts for reading the counters and looping. This overhead
+is subtracted from the test counts. The B module must be compiled or
+assembled after each modification of the test code. There are several
+versions of the B module:
+PMCTestB.cpp     C++ language, 32 and 64 bit mode, Windows and Linux
+PMCTestB32.asm   Assembly language, MASM syntax, 32 bit Windows
+PMCTestB64.asm   Assembly language, MASM syntax, 64 bit Windows
+PMCTestB32.nasm  Assembly language, NASM/YASM syntax, 32 bit Linux or Windows
+PMCTestB64.nasm  Assembly language, NASM/YASM syntax, 64 bit Linux or Windows
+
+You need only one of the B files. The B file must be compiled or assembled
+and linked together with the compiled A file into an executable file.
+
+Insert the piece of code you want to test in the B file at the place indicated 
+"Test code start". Alternatively, you may put the test code into a separate 
+third module and call it from the B module.
+
+Find the list of possible performance monitor counters at the bottom of PMCTestA.cpp.
+Find the counters you want to use and insert the counter id numbers in the 
+B file in the table named "CounterTypesDesired". The maximum number of counters
+you can have depends on the microprocessor.
+
+Compile for console mode, 32 or 64 bits. Make sure unicode is not enabled.
+
+If you are using Microsoft Visual Studio 2010 you can open one of the following
+project files:
+A32.vcxproj:  Assembly language, 32-bit mode
+A64.vcxproj:  Assembly language, 64-bit mode
+C32.vcxproj:  C++ language, 32-bit mode
+C64.vcxproj:  C++ language, 64-bit mode
+Similar project files are available for Visual Studio 2008.
+
+
+If you are using any other compiler IDE then make a project containing 
+PMCTestA.cpp and one of the B files. Turn off unicode support. You may
+need to define a custom build step for the assembly file, e.g.
+Command line: ml64 /c /Zi /Fl $(InputFileName)
+Output: $(InputName).obj
+
+You may build the test program without an IDE. The following batch or script
+files are provided for convenience:
+a32.sh  Linux, 32 bit mode, YASM assembler
+a64.sh  Linux, 64 bit mode, YASM assembler
+m32.bat  Windows, 32 bit mode, MASM assembler
+m64.bat  Windows, 64 bit mode, MASM assembler
+n32.bat  Windows, 32 bit mode, NASM assembler
+n64.bat  Windows, 64 bit mode, NASM assembler
+y32.bat  Windows, 32 bit mode, YASM assembler
+y64.bat  Windows, 64 bit mode, YASM assembler
+In Windows, you need to modify the bat files to insert the correct paths for the 
+compiler, linker, assembler, library files and header files. These paths depend on 
+the compiler version installed.
+In Linux, you need to make the script files executable by:
+chmod 744 *.sh
+Then execute with e.g.  ./go32.sh
+
+
+Installing the driver in Windows:
+---------------------------------
+The driver files MSRDriver32.sys and MSRDriver64.sys must be available in the same 
+directory as the test program. The driver is installed the first time the test
+program runs. If you want to uninstall the driver use uninstall.exe
+
+Note: If running under 64 bits Windows Vista or Windows 7 or later, then you have 
+to press F8 during system boot and select "Disable Driver Signature Enforcement". 
+
+The compiled program must be run with administrator rights.
+If running from Visual Studio or any other IDE then run the IDE as administrator.
+If running from a .bat file then run the .bat file or the command prompt as administrator.
+
+The driver is not needed if you set USE_PERFORMANCE_COUNTERS to 0 in the B file.
+
+
+Installing the driver in Linux:
+-------------------------------
+Unpack DriverSrcLinux.zip into an empty folder. Then:
+make
+chmod 744 install.sh
+sudo ./install.sh
+
+See DriverSrcLinux.txt for details. You need to reinstall after reboot.
+
+
+Multithreading:
+---------------
+Some microprocessors have multiple cores and some processors can run two threads 
+in each core. The total number of threads that the processor can run simultaneously is 
+the number of cores times the number of threads per core. The maximum number of threads
+to run during the test is limited to 4 or 8 by MAXTHREADS in the file PMCTest.h. 
+You can run multiple threads in order to test the influence of multithreading on performance.
+If you run 3 threads on a processor with multiple cores and two threads per core then
+you will have two threads (proc. 0 and 1) in the first core and one thread (proc. 2) in
+the second core. The first two theads are likely to run slower because they are sharing
+the same resources. Make sure the threads do not write to the same cache lines.
+
+You should use the multithreading feature only when you want to test resource contention
+between threads. The results may be misleading or difficult to interpret.
+The most consistent and reliable results are obtained by running only a single thread.
+
+
+Microprocessors supported:
+--------------------------
+* Intel microprocessors from Pentium 1 through Pentium 4, Pentium M, 
+  Core Solo/Duo, Core 2, Nehalem, Sandy Bridge, Atom.
+* AMD Duron, Athlon, Athlon 64, Opteron, K8, K10, Bobcat, Bulldozer.
+* VIA Nano (The PMCs in VIA Nano are undocumented).
+
+These microprocessors all have time stamp counters and performance monitor
+counters. The performance monitor counters are microprocessor specific. The
+PMC programs may need modification to work with future microprocessor families.
+
+
+User options:
+-------------
+
+The following options can be set by modifying the B file:
+
+REPETITIONS:     The number of times the test code is repeated. The output will show
+                 the results for each repetition.
+
+NUM_THREADS:     Number of simultaneous threads. Set to 1 unless you are testing 
+                 multithreading performance.
+
+USE_PERFORMANCE_COUNTERS: Set to 1 if you are using performance monitor counters.
+
+SUBTRACT_OVERHEAD: Set to 1 to subtract program overhead from clock counts and
+                 performance counts. You may set this to 0 if the overhead counts
+                 are unstable because of multithreading.
+
+OVERHEAD_REPETITIONS: Number of repetitions to measure the program overhead. This
+                 should be more than 1 in order to eliminate cache effects.
+
+CACHELINESIZE:   The size, in bytes, of cache lines in the microprocessor. This value
+                 is needed in case of multithreading in order to prevent threads from
+                 using the same cache lines.
+
+CounterTypesDesired: Counter id numbers for the counter types you want to use, e.g.
+                 id 100 for counting micro-operations. The id numbers are CPU-specific.
+                 These are listed in the table CounterDefinitions in PMCTestA.cpp.
+
+User data:       Any static data that your test code may need.
+
+User Initializations: Any initializations that your test code may need before the test loop.
+
+Test code start: Insert the code to test here.
+
+
+Defining new event counters:
+----------------------------
+You can add new counter types in the table CounterDefinitions in PMCTestA.cpp according 
+to the manual for the CPU in question. The fields in the table are:
+id:       An arbitrary id number.
+scheme:   The counter scheme defines whitch model-specific registers to use. This is
+          specific for a particular brand and family of CPUs. Values may be OR'ed if
+          multiple sub-schemes have the same counters.
+cpu:      The CPU type for whitch the counter works. Values may be OR'ed.
+CounterFirst, CounterLast: The range of counter registers that can be used.
+eventreg: Event register, if applicable.
+event:    Identification of the event to count.
+mask:     Bit-mask possibly identifying sub-events.
+name:     A name to show on the output listing. Max. 9 characters.
+
+
+Defining new CPUs:
+------------------
+The function CCounters::GetProcessorVendor() identifies the CPU vendor.
+The function CCounters::GetProcessorFamily() identifies the CPU family and model.
+The function CCounters::GetPMCScheme() finds the appropriate PMC scheme for the 
+specific CPU vendor, family and model.
+The function CCounters::DefineCounter(SCounterDefinition & CDef) specifies how to
+set up the necessary model-specific registers for a particular PMC scheme. 
+You may get a blue screen error if you attempt to use a model-specific register that
+doesn't exist in the current CPU.
+
+
+Troubleshooting:
+----------------
+Cannot load driver:
+    Make sure the *.sys driver files are available in the path.
+    The 64 bit driver MSRDriver64.sys is needed under x64 Windows, even if
+    running in 32 bit mode.
+    If running under Windows Vista or Windows 7: Press F8 during system boot
+    and select "Disable Driver Signature Enforcement". 
+    Run as administrator.
+    Ignore the popup message "Windows requires a digitally signed driver".
+
+Error compiling *.cpp file:
+    Make sure the character set is ASCII, not unicode. In Visual C++ set
+    Project -> Properties -> General -> Character set -> Not Set.
+    Make sure you compile for console mode, unmanaged code.
+    Do not enable precompiled headers. Comment out "#include <intrin.h>" in 
+    the .cpp files if the compiler doesn't support intrinsics.
+
+Unresolved externals:
+    Make sure you define a custom build rule for any .asm file if you are
+    using MS Visual Studio:
+    For PMCTestB32.asm: Right click on PMCTestB32.asm -> Properties ->
+    All Configurations -> Custom Build Step -> Command Line:
+    ml /c /Cx /Zi /Fl $(InputFileName)
+    Outputs: $(InputName).obj
+    For PMCTestB64.asm: Same as above. Use ml64 instead of ml.
+
+Cannot make counter:
+    The numbers in CounterTypesDesired in the B file should fit the CPU type
+    you are running on. Available numbers are listed in PMCTestA.cpp under
+    CounterDefinitions.
+
+
+File list:
+----------
+PMCTestA.cpp:       Source code for A module, 32 and 64 bit mode.
+PMCTestB.cpp:       Source code for B module, 32 and 64 bit mode, C++ code.
+PMCTestB32.asm:     Source code for B module, 32 bit, Assembly, MASM syntax
+PMCTestB64.asm:     Source code for B module, 64 bit, Assembly, MASM syntax
+PMCTestB32.nasm:    Source code for B module, 32 bit, Assembly, NASM/YASM syntax
+PMCTestB64.nasm:    Source code for B module, 64 bit, Assembly, NASM/YASM syntax
+PMCTest.h:          C++ include file with class definitions, constants, etc.
+MSRDriver.h:        C++ include file with driver definitions
+MSRdrvL.h:          C++ include file with driver definitions, Linux only
+PMCTestWin.h        C++ file with Windows-specific functions
+PMCTestLinux.h      C++ file with Linux-specific functions
+intrin1.h           C++ include file with intrinsic functions for MS compiler
+                    (Shortened version of intrin.h)
+vs2008_project_files.zip Project workspace and project files for MS Visual studio 2008
+vs2010_project_files.zip Project workspace and project files for MS Visual studio 2010
+m32.bat, m64.bat    Windows batch program for building test program, MASM assembler, 32 or 64 bit.
+n32.bat, n64.bat    Windows batch program for building test program, NASM assembler, 32 or 64 bit.
+y32.bat, y64.bat    Windows batch program for building test program, YASM assembler, 32 or 64 bit.
+a32.sh, a64.sh      Linux shell script for building test program, YASM assembler, 32 or 64 bit.
+c32.sh, c64.sh      Linux shell script for building test program, C++, 32 or 64 bit.
+PMCTestA32.obj      PMCTestA.cpp compiled, 32 bit Windows
+PMCTestA64.obj      PMCTestA.cpp compiled, 64 bit Windows
+MSRDriver32.sys:    Kernel mode driver for 32 bit Windows.
+MSRDriver64.sys:    Kernel mode driver for 64 bit Windows.
+uninstall.exe:      Used for unintstalling driver under Windows
+uninstall.cpp:      Source code for uninstall.exe
+PMCTest.txt:        This file.
+instruction_scripts.zip: Test scripts that I have used for measuring instruction latency
+                    and throughput. For Ubuntu 64 bit, YASM assembler.
+test_scripts.zip:   Various other test scripts that I have used. For Ubuntu 64 bit, YASM assembler.
+TemplateB32.nasm:   Used by test scripts in instruction_scripts.zip
+TemplateB64.nasm:   Used by test scripts in instruction_scripts.zip and test_scripts.zip
