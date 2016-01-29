@@ -40,17 +40,19 @@ nop
 
 %ENDREP
     """, [1, 9, 201, 207], init="""
-    cmp ebp, ebp
-%REP 65536
-    jnz $+2
-%REP 16
+    mov rax, 0x1f38bba8238a0230
+    mov ecx, 100
+ScrambleBP:
+%REP 512
+    rcr rax, 1
+    jnc $+4
+%REP 14
     nop
 %ENDREP
-    jz $+2
-%REP 16
-    nop
 %ENDREP
-%ENDREP""")
+    dec ecx
+    jnz ScrambleBP
+""")
     print
 
 
