@@ -83,12 +83,7 @@ SECTION .data   align = CACHELINESIZE
 %define NUM_COUNTERS  4              ; must match value in PMCTest.h
 
 CounterTypesDesired:
- ;   DD      1        ; core cycles (Intel only)
-    DD      9        ; instructions
-    DD    100        ; uops
-    DD    311        ; data cache misses
-    DD    162        ; xmm instr
-
+%include "counters.inc"
 times (MAXCOUNTERS - ($-CounterTypesDesired)/4)  DD 0
 
 ; Number of repetitions of test.
@@ -394,11 +389,7 @@ mov ebp, 100
 align 16
 LL:
 
-%REP 100        ; example: 100 shift instructions
-
-        shr eax, 5
-
-%ENDREP
+%include "test.inc"
 
 
 dec ebp
