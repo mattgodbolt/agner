@@ -34,7 +34,7 @@ default rel
 
 ; Define whether AVX and YMM registers used
 %ifndef  USEAVX
-%define  USEAVX   1
+%define  USEAVX   0
 %endif
 
 ; Define cache line size (to avoid threads sharing cache lines):
@@ -95,7 +95,7 @@ times (MAXCOUNTERS - ($-CounterTypesDesired)/4)  DD 0
 %define REPETITIONS  8
 
 ; Number of threads
-%define NUM_THREADS  3
+%define NUM_THREADS  1
 
 ; Subtract overhead from clock counts (0 if not)
 %define SUBTRACT_OVERHEAD  1
