@@ -1,2 +1,2 @@
-	rm -f /dev/MSRdrv
-	rmmod MSRdrv
+rm -f /dev/MSRdrv
+rmmod MSRdrv

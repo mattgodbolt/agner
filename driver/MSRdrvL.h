@@ -11,7 +11,6 @@
 #include <linux/types.h>
 #include "MSRDriver.h"
 
-//#define DEV_MAJOR 222
 #define DEV_MAJOR 249  // range 240-254 is vacant
 #define DEV_MINOR 0
 #define DEV_NAME "MSRdrv"
