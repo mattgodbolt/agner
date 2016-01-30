@@ -937,6 +937,12 @@ SCounterDefinition CounterDefinitions[] = {
     {201, S_ID2,  INTEL_IVY, 0,   1,     0,   0xc4,     0x20, "BrTaken"    }, // branches taken. (Mask: 1=pred.not taken, 2=mispred not taken, 4=pred.taken, 8=mispred taken)
     {204, S_ID3,  INTEL_7,   0,   3,     0,   0xc5,     0x0a, "BrMispred"  }, // mispredicted branches
     {207, S_ID3,  INTEL_7I,  0,   3,     0,   0xc5,     0x0,  "BrMispred"  }, // mispredicted branches
+    {201, S_ID3,  INTEL_7I,  0,   3,     0,   0xc4,     0x02,  "BrTaken"  }, // MG added (not sure this is right)
+    {400, S_ID3,  INTEL_7I,  0,   3,     0,   0xa7,     0x01,  "BaClrFIq"  }, // MG added
+    {401, S_ID3,  INTEL_7I,  0,   3,     0,   0xe6,     0x01,  "BaClrClr"  }, // MG added
+    {402, S_ID3,  INTEL_7I,  0,   3,     0,   0xe6,     0x02,  "BaClrBad"  }, // MG added
+    {403, S_ID3,  INTEL_7I,  0,   3,     0,   0xe8,     0x01,  "BaClrEly"  }, // MG added
+    {404, S_ID3,  INTEL_7I,  0,   3,     0,   0xe8,     0x02,  "BaClrL8"  }, // MG added
     {205, S_ID3,  INTEL_7,   0,   3,     0,   0xe6,      2,   "BTBMiss"    }, // static branch prediction made, Sandy Bridge
     {220, S_ID3,  INTEL_IVY, 0,   3,     0,   0x58,     0x03, "Mov elim"   }, // register moves eliminated
     {221, S_ID3,  INTEL_IVY, 0,   3,     0,   0x58,     0x0C, "Mov elim-"  }, // register moves elimination unsuccessful

@@ -270,7 +270,7 @@ Warmuploop:
         lea rdi, [rsi+120h]
         xor ebp, ebp
         
-%include "init.inc"
+%include "init_once.inc"
 
 ;##############################################################################
 ;#
@@ -349,6 +349,7 @@ TEST_LOOP_1:
 
 %endif  ; SUBTRACT_OVERHEAD
 
+%include "init_each.inc"
         
 ; Second test loop. Measure user code
         xor     r14d, r14d                    ; Loop counter
