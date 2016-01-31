@@ -87,7 +87,7 @@ CounterTypesDesired:
 times (MAXCOUNTERS - ($-CounterTypesDesired)/4)  DD 0
 
 ; Number of repetitions of test.
-%define REPETITIONS  8
+%define REPETITIONS  3
 
 ; Number of threads
 %define NUM_THREADS  1
