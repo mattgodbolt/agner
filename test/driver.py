@@ -73,10 +73,9 @@ ScrambleBP:
     dec ecx
     jnz ScrambleBP
 """
-    run_test(test_code, [1, 9, 207, 205], init_each=init_code)
-    run_test(test_code, [1, 9, 400, 401], init_each=init_code)
-    run_test(test_code, [1, 9, 402, 403], init_each=init_code)
-    run_test(test_code, [1, 9, 404], init_each=init_code)
+    run_test(test_code, [1, 9, 207, 400], init_each=init_code)
+    run_test(test_code, [1, 9, 401, 402], init_each=init_code)
+    run_test(test_code, [1, 9, 403, 404], init_each=init_code)
     print
 
 

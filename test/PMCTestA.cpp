@@ -459,7 +459,8 @@ void CCounters::GetProcessorFamily() {
             if (Model == 0x1C) MFamily = INTEL_ATOM;     // Atom
             if (Model >= 0x1D) MFamily = INTEL_7;        // Nehalem, Sandy Bridge
             if (Model == 0x3A) MFamily = INTEL_IVY;      // Ivy Bridge
-            if (Model >= 0x3B) MFamily = INTEL_HASW;     // Haswell
+            if (Model == 0x3E) MFamily = INTEL_IVY;      // Ivy Bridge (e.g. E5-2667 v2)
+            if (Model >= 0x3F) MFamily = INTEL_HASW;     // Haswell
         }
     }
 
@@ -988,6 +989,12 @@ SCounterDefinition CounterDefinitions[] = {
     {156, S_ID3,  INTEL_HASW, 0,  3,     0,   0xa1,     0x40, "uop p6"     }, // uops port 6.
     {157, S_ID3,  INTEL_HASW, 0,  3,     0,   0xa1,     0x80, "uop p7"     }, // uops port 7.
     {160, S_ID3,  INTEL_HASW, 0,  3,     0,   0xa1,     0xFF, "uop p07"    }, // uops port 0 - 7
+    // Following are ones MG added; spec is vague on whether these exist in Haswell
+    {400, S_ID3,  INTEL_HASW, 0,  3,     0,   0xa7,     0x01,  "BaClrFIq"  }, // MG added
+    {401, S_ID3,  INTEL_HASW, 0,  3,     0,   0xe6,     0x01,  "BaClrClr"  }, // MG added
+    {402, S_ID3,  INTEL_HASW, 0,  3,     0,   0xe6,     0x02,  "BaClrBad"  }, // MG added
+    {403, S_ID3,  INTEL_HASW, 0,  3,     0,   0xe8,     0x01,  "BaClrEly"  }, // MG added
+    {404, S_ID3,  INTEL_HASW, 0,  3,     0,   0xe8,     0x02,  "BaClrL8"  }, // MG added
 
     // Intel Atom:
     // The first counter is fixed-function counter having its own register,
