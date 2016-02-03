@@ -57,21 +57,7 @@ align 16
 align 16
 """ + extra_end
     init_code =  """
-    mov rax, 0x1f38bba8238a0230
-    mov rbx, 0xffffffffffffffff
-    mov ecx, 10
-ScrambleBP:
-%macro OneJump 0
-    rcr rax, 1
-    jnc %%skip
-%%skip:
-%endmacro
-%REP 1024
-    OneJump
-%ENDREP
-    xor rax, rbx
-    dec ecx
-    jnz ScrambleBP
+    call ScrambleBTB
 """
     run_test(test_code, [1, 9, 207, 400], init_each=init_code)
     run_test(test_code, [1, 9, 401, 402], init_each=init_code)
