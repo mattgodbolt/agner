@@ -2,9 +2,11 @@
 
 import os
 import subprocess
+import sys
 
 
 def run_test(test, counters, init_once="", init_each=""):
+    sys.stdout.flush()
     subprocess.check_call(["make", "-s", "out/a64.o"])
 
     with open("out/counters.inc", "w") as cf:
