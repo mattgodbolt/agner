@@ -167,6 +167,18 @@ int main(int argc, char* argv[]) {
     // Clean up
     MSRCounters.CleanUp();
 
+    // print column headings
+    if (NumThreads > 1) printf("Processor,");
+    printf("Clock,");
+    if (UsePMC) {
+        for (i = 0; i < NumCounters; i++) {
+            printf("%s", MSRCounters.CounterNames[i]);
+            if (i != NumCounters - 1) printf(",");
+        }
+    }
+    printf("\n");
+    // TODO: support RatioOut/TempOut?
+
     // Print results
     for (t = 0; t < NumThreads; t++) {
         // calculate offsets into ThreadData[]
@@ -174,95 +186,19 @@ int main(int argc, char* argv[]) {
         int ClockOS = ClockResultsOS / sizeof(int);
         int PMCOS   = PMCResultsOS / sizeof(int);
 
-        // print column headings
-        printf("\nProcessor %i", ProcNum[t]);
-        printf("\n     Clock ");
-        if (UsePMC) {
-            for (i = 0; i < NumCounters; i++) {
-                printf("%10s ", MSRCounters.CounterNames[i]);
-            }
-        }
-        if (RatioOut[0]) printf("%10s ", RatioOutTitle ? RatioOutTitle : "Ratio");
-        if (TempOut) printf("%10s ", TempOutTitle ? TempOutTitle : "Extra out");
-
+        if (NumThreads > 1) printf("%i,", ProcNum[t]);
         // print counter outputs
         for (repi = 0; repi < repetitions; repi++) {
-            printf("\n%10i ", PThreadData[repi+TOffset+ClockOS]);
+            printf("%i,", PThreadData[repi+TOffset+ClockOS]);
             if (UsePMC) {
                 for (i = 0; i < NumCounters; i++) {         
-                    printf("%10i ", PThreadData[repi+i*repetitions+TOffset+PMCOS]);
+                    printf("%i", PThreadData[repi+i*repetitions+TOffset+PMCOS]);
+                    if (i != NumCounters - 1) printf(",");
                 }
             }
-            // optional ratio output
-            if (RatioOut[0]) {
-                union {
-                    int i;
-                    float f;
-                } factor;
-                factor.i = RatioOut[3];
-                int a, b;
-                if (RatioOut[1] == 0) {
-                    a = PThreadData[repi+TOffset+ClockOS];
-                }
-                else if ((unsigned int)RatioOut[1] <= (unsigned int)NumCounters) {
-                    a = PThreadData[repi+(RatioOut[1]-1)*repetitions+TOffset+PMCOS];
-                }
-                else {
-                    a = 1;
-                }
-                if (RatioOut[2] == 0) {
-                    b = PThreadData[repi+TOffset+ClockOS];
-                }
-                else if ((unsigned int)RatioOut[2] <= (unsigned int)NumCounters) {
-                    b = PThreadData[repi+(RatioOut[2]-1)*repetitions+TOffset+PMCOS];
-                }
-                else {
-                    b = 1;
-                }
-                if (b == 0) {
-                    printf("%10s", "inf");
-                }
-                else if (RatioOut[0] == 1) {
-                    printf("%10i ", factor.i * a / b);
-                }
-                else {
-                    printf("%10.6f ", factor.f * (double)a / (double)b);
-                }
-            }
-            // optional arbitrary output
-            if (TempOut) {
-                union {
-                    int * pi;
-                    int64 * pl;
-                    float * pf;
-                    double * pd;
-                } pu;
-                pu.pi = PThreadData + repi + TOffset;      // pointer to CountTemp
-                if (TempOut & 1) pu.pi += repi;            // double size
-                switch (TempOut) {
-                case 2:    // int
-                    printf("%10i", *pu.pi);  break;
-                case 3:    // 64 bit int
-                    printf("%10lli", *pu.pl);  break;
-                case 4:    // hexadecimal int
-                    printf("0x%08X", *pu.pi);  break;
-                case 5:    // hexadecimal 64-bit int
-                    printf("0x%08X%08X", pu.pi[1], pu.pi[0]);  break;
-                case 6:    // float
-                    printf("%10.6f", *pu.pf);  break;
-                case 7:    // double
-                    printf("%10.6f", *pu.pd);  break;
-                default:
-                    printf("unknown TempOut %i", TempOut);
-                }
-            }
+            printf("\n");
         }
     }
-
-    printf("\n");
-    // Optional: wait for key press
-    //printf("\npress any key");
-    //getch();
 
     // Exit
     return 0;

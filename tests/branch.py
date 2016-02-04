@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from lib.agner import run_test
+from lib.agner import print_test
 
 
 SCRAMBLE_BTB = """
@@ -61,9 +61,9 @@ align 16
 %ENDREP
 align 16
 """ + extra_end
-    run_test(test_code, [1, 9, 207, 400], init_each=SCRAMBLE_BTB)
-    run_test(test_code, [1, 9, 401, 402], init_each=SCRAMBLE_BTB)
-    run_test(test_code, [1, 9, 403, 404], init_each=SCRAMBLE_BTB)
+    print_test(test_code, [1, 9, 207, 400], init_each=SCRAMBLE_BTB)
+    print_test(test_code, [1, 9, 401, 402], init_each=SCRAMBLE_BTB)
+    print_test(test_code, [1, 9, 403, 404], init_each=SCRAMBLE_BTB)
     print
 
 

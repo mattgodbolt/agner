@@ -92,7 +92,9 @@ times (MAXCOUNTERS - ($-CounterTypesDesired)/4)  DD 0
 %endif
 
 ; Number of threads
+%ifndef NUM_THREADS
 %define NUM_THREADS  1
+%endif
 
 ; Subtract overhead from clock counts (0 if not)
 %define SUBTRACT_OVERHEAD  1

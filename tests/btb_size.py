@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from lib.agner import run_test
+from lib.agner import *
 
 
 def btb_size_test(name, num_branches, align):
@@ -26,13 +26,13 @@ BtbLoop:
 OneJump
 %endrep
 """.format(num_branches=num_branches, align=align)
-    run_test(test_code, [1, 9, 207])
+    print_test(test_code, [1, 9, 207], repetitions=1)
     print
 
 
 def run_tests():
-    for num in [64]:
-        for align in [16, 32, 64, 128, 256, 512, 1024, 16384, 65536]:
+    for num in [1, 4, 8, 64, 128]:
+        for align in [16, 256, 512, 1024, 2048, 4096, 16384, 65536]:
             btb_size_test("BTB size test %d branches aligned on %d" % (num, align), num, align)
 
 if __name__ == "__main__":
