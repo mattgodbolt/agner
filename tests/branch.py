@@ -4,31 +4,7 @@ import os
 import subprocess
 import sys
 
-
-def run_test(test, counters, init_once="", init_each=""):
-    sys.stdout.flush()
-    subprocess.check_call(["make", "-s", "out/a64.o"])
-
-    with open("out/counters.inc", "w") as cf:
-        [cf.write("    DD %d\n" % counter) for counter in counters]
-
-    with open("out/test.inc", "w") as tf:
-        tf.write(test)
-
-    with open("out/init_once.inc", "w") as init_f:
-        init_f.write(init_once)
-
-    with open("out/init_each.inc", "w") as init_f:
-        init_f.write(init_each)
-
-    subprocess.check_call([
-        "nasm", "-f", "elf64", 
-        "-l", "out/b64.lst",
-        "-I", "out/",
-        "-o", "out/b64.o",
-        "PMCTestB64.nasm"])
-    subprocess.check_call(["g++", "-o", "out/test", "out/a64.o", "out/b64.o", "-lpthread"])
-    subprocess.check_call(["out/test"])
+from lib.agner import run_test
 
 
 def branch_test(name, instr, backwards=False):
@@ -67,8 +43,11 @@ align 16
     print
 
 
-if __name__ == "__main__":
+def run_tests():
     branch_test("Ahead not taken", "jne $+4")
     branch_test("Behind not taken", "jne $-4")
     branch_test("Ahead taken", "je $+4")
     branch_test("Behind taken", "je $-16-8", True)
+
+if __name__ == "__main__":
+    run_tests()

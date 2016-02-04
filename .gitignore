@@ -2,3 +2,4 @@
 *.o
 core
 core.*
+*.pyc
