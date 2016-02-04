@@ -7,6 +7,33 @@ import sys
 from lib.agner import run_test
 
 
+SCRAMBLE_BTB = """
+; Proven effective at "scrambling" the BTB/BPU for an Arrendale M520
+%macro OneJump 0
+    mov ecx, esi
+    align 16
+%%lp:
+    dec ecx
+    jnz %%lp
+%endmacro
+
+    jmp ScrambleBTB
+
+ScrambleBTB_i:
+    align 16
+%REP 4096
+    OneJump
+%ENDREP
+    ret
+
+ScrambleBTB:
+    mov esi, 3
+.lp:
+    call ScrambleBTB_i
+    dec esi
+    jnz .lp
+"""
+
 def branch_test(name, instr, backwards=False):
     print "*" * 78
     print name
@@ -34,12 +61,9 @@ align 16
 %ENDREP
 align 16
 """ + extra_end
-    init_code =  """
-    call ScrambleBTB
-"""
-    run_test(test_code, [1, 9, 207, 400], init_each=init_code)
-    run_test(test_code, [1, 9, 401, 402], init_each=init_code)
-    run_test(test_code, [1, 9, 403, 404], init_each=init_code)
+    run_test(test_code, [1, 9, 207, 400], init_each=SCRAMBLE_BTB)
+    run_test(test_code, [1, 9, 401, 402], init_each=SCRAMBLE_BTB)
+    run_test(test_code, [1, 9, 403, 404], init_each=SCRAMBLE_BTB)
     print
 
 

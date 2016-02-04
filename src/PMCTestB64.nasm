@@ -482,27 +482,3 @@ jnz LL
         ret
         
 ; End of TestLoop
-
-%macro OneJump 0
-    mov ecx, esi
-    align 16
-%%lp:
-    dec ecx
-    jnz %%lp
-%endmacro
-
-ScrambleBTB_i:
-    align 16
-%REP 4096
-    OneJump
-%ENDREP
-    ret
-
-; Proven effective at "scrambling" the BTB/BPU for an Arrendale M520
-ScrambleBTB:
-    mov esi, 3
-.lp:
-    call ScrambleBTB_i
-    dec esi
-    jnz .lp
-    ret
