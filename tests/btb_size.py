@@ -5,9 +5,7 @@ import subprocess
 import sys
 
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-from matplotlib import cm
 
 from lib.agner import *
 
@@ -17,8 +15,8 @@ def btb_size_test(name, num_branches, align):
     test_code = """
 %macro OneJump 0
 je %%next
-%%next:
 align {align}
+%%next:
 %endmacro
 
 cmp eax, eax
@@ -38,42 +36,19 @@ nop
     return {key:min([x[key] for x in r]) for key in r[0].keys()}
 
 
-def plot(xs, ys, result, name):
-
-    result = np.array(result)
-
-    fig=plt.figure()
+def plot(xs, ys, result, name, index):
+    ax = plt.subplot(2, 2, index)
+    ax.set_yscale('log', basey=2)
     plt.title(name)
-    ax1=fig.add_subplot(111, projection='3d')
-
-    xlabels = np.array(xs)
-    xpos = np.arange(xlabels.shape[0])
-    ylabels = np.array(ys)
-    ypos = np.arange(ylabels.shape[0])
-
-    xposM, yposM = np.meshgrid(xpos, ypos, copy=False)
-
-    zpos=result
-    zpos = zpos.ravel(order='F')
-
-    dx=0.5
-    dy=0.5
-    dz=zpos
-
-    ax1.w_xaxis.set_ticks(xpos + dx/2.)
-    ax1.w_xaxis.set_ticklabels(xlabels)
-    ax1.set_xlabel("Branch count")
-
-    ax1.w_yaxis.set_ticks(ypos + dy/2.)
-    ax1.w_yaxis.set_ticklabels(ylabels)
-    ax1.set_ylabel("Branch alignment")
-
-    ax1.set_zlabel("Mispred ratio")
-
-    values = np.linspace(0.2, 1., xposM.ravel().shape[0])
-    colors = cm.rainbow(values)
-    ax1.bar3d(xposM.ravel(), yposM.ravel(), dz*0, dx, dy, dz, color=colors, zsort='max',
-            label=name)
+    
+    plt.xlabel("Branch count")
+    plt.ylabel("Branch alignment")
+    xs = np.array(xs + [xs[-1] + 1])
+    ys = np.array(ys + [ys[-1] * 2])
+    xx, yy = np.meshgrid(xs, ys)
+    result = np.array(result)
+    plt.pcolor(xx, yy, result)
+    plt.colorbar()
 
 
 def run_tests():
@@ -87,9 +62,7 @@ def run_tests():
 
     # attempt to find number of ways : huge leap to ensure we hit the same set every time
     nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    aligns = [32*1024, 64 * 1024, 128*1024, 512*1024]
-    nums = [1]
-    aligns = [2]
+    aligns = [2**x for x in range(1, 21)]
     # attempt to find number of addr bits : two branches very spread
     #nums = [2]
     #aligns = [512*1024, 1024*1024, 2* 1024*1024, 4*1024*1024, 8*1024*1024, 16*1024*1024, 32*1024*1024, 64*1024*1024]
@@ -100,20 +73,24 @@ def run_tests():
     mispred = []
     early = []
     late = []
-    for num in nums:
+    core = []
+    for align in aligns:
         mispred.append([])
         early.append([])
         late.append([])
-        for align in aligns:
+        core.append([])
+        for num in nums:
             res = btb_size_test("BTB size test %d branches aligned on %d" % (num, align), num, align)
             exp = num * 100.0 # expected max mispreds
             mispred[-1].append(res['BrMispred'] / exp)
             early[-1].append(res['BaClrEly'] / exp)
             late[-1].append(res['BaClrL8'] / exp)
+            core[-1].append(res['Core cyc'])
     print mispred
-    plot(nums, aligns, mispred, "Mispredictions")
-    plot(nums, aligns, early, "Early clears")
-    plot(nums, aligns, late, "Late clears")
+    plot(nums, aligns, mispred, "Mispredictions", 1)
+    plot(nums, aligns, early, "Early clears", 2)
+    plot(nums, aligns, late, "Late clears", 3)
+    plot(nums, aligns, core, "Core cycles", 4)
     plt.show()
 
 if __name__ == "__main__":
