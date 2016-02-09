@@ -4,6 +4,11 @@ import os
 import subprocess
 import sys
 
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+from matplotlib import cm
+
 from lib.agner import *
 
 
@@ -28,20 +33,17 @@ OneJump
 nop
 %endrep
 """.format(num_branches=num_branches, align=align)
-    r = run_test(test_code, [1, 9, 207], repetitions=100)
+    r = run_test(test_code, [1, 207, 403, 404], repetitions=100)
     print r
-    return min([x['BrMispred'] for x in r])
+    return {key:min([x[key] for x in r]) for key in r[0].keys()}
 
 
-def plot(xs, ys, result):
-    import numpy as np
-    from mpl_toolkits.mplot3d import Axes3D
-    import matplotlib.pyplot as plt
-    from matplotlib import cm
+def plot(xs, ys, result, name):
 
     result = np.array(result)
 
     fig=plt.figure()
+    plt.title(name)
     ax1=fig.add_subplot(111, projection='3d')
 
     xlabels = np.array(xs)
@@ -60,14 +62,18 @@ def plot(xs, ys, result):
 
     ax1.w_xaxis.set_ticks(xpos + dx/2.)
     ax1.w_xaxis.set_ticklabels(xlabels)
+    ax1.set_xlabel("Branch count")
 
     ax1.w_yaxis.set_ticks(ypos + dy/2.)
     ax1.w_yaxis.set_ticklabels(ylabels)
+    ax1.set_ylabel("Branch alignment")
+
+    ax1.set_zlabel("Mispred ratio")
 
     values = np.linspace(0.2, 1., xposM.ravel().shape[0])
     colors = cm.rainbow(values)
-    ax1.bar3d(xposM.ravel(), yposM.ravel(), dz*0, dx, dy, dz, color=colors)
-    plt.show()
+    ax1.bar3d(xposM.ravel(), yposM.ravel(), dz*0, dx, dy, dz, color=colors, zsort='max',
+            label=name)
 
 
 def run_tests():
@@ -80,9 +86,10 @@ def run_tests():
     aligns = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
 
     # attempt to find number of ways : huge leap to ensure we hit the same set every time
-    nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    aligns = [128*1024, 512*1024, 1024*1024]
-
+    nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    aligns = [32*1024, 64 * 1024, 128*1024, 512*1024]
+    nums = [1]
+    aligns = [2]
     # attempt to find number of addr bits : two branches very spread
     #nums = [2]
     #aligns = [512*1024, 1024*1024, 2* 1024*1024, 4*1024*1024, 8*1024*1024, 16*1024*1024, 32*1024*1024, 64*1024*1024]
@@ -90,16 +97,24 @@ def run_tests():
     #nums = [1,2,3,4,5,6,7,8,12,16,256]
     #aligns = [16, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536]
     #aligns = [x*32768 for x in [1, 2, 4, 8, 16, 32]]
-    result = []
+    mispred = []
+    early = []
+    late = []
     for num in nums:
-        row = []
+        mispred.append([])
+        early.append([])
+        late.append([])
         for align in aligns:
             res = btb_size_test("BTB size test %d branches aligned on %d" % (num, align), num, align)
             exp = num * 100.0 # expected max mispreds
-            row.append(res / exp)
-        result.append(row)
-    print result
-    plot(nums, aligns, result)
+            mispred[-1].append(res['BrMispred'] / exp)
+            early[-1].append(res['BaClrEly'] / exp)
+            late[-1].append(res['BaClrL8'] / exp)
+    print mispred
+    plot(nums, aligns, mispred, "Mispredictions")
+    plot(nums, aligns, early, "Early clears")
+    plot(nums, aligns, late, "Late clears")
+    plt.show()
 
 if __name__ == "__main__":
     run_tests()
