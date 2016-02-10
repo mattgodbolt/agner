@@ -52,16 +52,17 @@ def plot(xs, ys, result, name, index):
 
 def run_tests():
     # attempt to find total size
-    nums = range(512, 9000, 512)
-    aligns = [2, 4, 8, 16, 32, 64]
+    #nums = range(512, 9000, 512)
+    #aligns = [2, 4, 8, 16, 32, 64]
 
     # attempt to find set bits
-    nums = [4, 8, 16, 32, 64]
-    aligns = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
+    #nums = [4,5]
+    #aligns = [2**x for x in range(1, 24)]
 
-    # attempt to find number of ways : huge leap to ensure we hit the same set every time
+    # attempt to find number of ways : large leaps to ensure we hit the same set every time
     nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     aligns = [2**x for x in range(1, 21)]
+
     # attempt to find number of addr bits : two branches very spread
     #nums = [2]
     #aligns = [512*1024, 1024*1024, 2* 1024*1024, 4*1024*1024, 8*1024*1024, 16*1024*1024, 32*1024*1024, 64*1024*1024]
