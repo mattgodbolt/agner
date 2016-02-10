@@ -14,12 +14,11 @@ def btb_size_test(name, num_branches, align):
     print name
     test_code = """
 %macro OneJump 0
-je %%next
+jmp %%next
 align {align}
 %%next:
 %endmacro
 
-cmp eax, eax
 jmp BtbLoop
 align {align}
 BtbLoop:
@@ -31,7 +30,7 @@ OneJump
 nop
 %endrep
 """.format(num_branches=num_branches, align=align)
-    r = run_test(test_code, [1, 207, 403, 404], repetitions=100)
+    r = run_test(test_code, [1, 401, 403, 404], repetitions=100)
     print r
     return {key:min([x[key] for x in r]) for key in r[0].keys()}
 
@@ -66,28 +65,23 @@ def run_tests():
     # attempt to find number of addr bits : two branches very spread
     #nums = [2]
     #aligns = [512*1024, 1024*1024, 2* 1024*1024, 4*1024*1024, 8*1024*1024, 16*1024*1024, 32*1024*1024, 64*1024*1024]
-    #nums = [1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 128, 256]
-    #nums = [1,2,3,4,5,6,7,8,12,16,256]
-    #aligns = [16, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536]
-    #aligns = [x*32768 for x in [1, 2, 4, 8, 16, 32]]
-    mispred = []
+    resteer = []
     early = []
     late = []
     core = []
     for align in aligns:
-        mispred.append([])
+        resteer.append([])
         early.append([])
         late.append([])
         core.append([])
         for num in nums:
             res = btb_size_test("BTB size test %d branches aligned on %d" % (num, align), num, align)
-            exp = num * 100.0 # expected max mispreds
-            mispred[-1].append(res['BrMispred'] / exp)
+            exp = num * 100.0 # number of branches under test
+            resteer[-1].append(res['BaClrClr'] / exp)
             early[-1].append(res['BaClrEly'] / exp)
             late[-1].append(res['BaClrL8'] / exp)
             core[-1].append(res['Core cyc'])
-    print mispred
-    plot(nums, aligns, mispred, "Mispredictions", 1)
+    plot(nums, aligns, resteer, "Front-end re-steers", 1)
     plot(nums, aligns, early, "Early clears", 2)
     plot(nums, aligns, late, "Late clears", 3)
     plot(nums, aligns, core, "Core cycles", 4)
