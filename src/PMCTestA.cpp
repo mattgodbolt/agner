@@ -880,6 +880,7 @@ SCounterDefinition CounterDefinitions[] = {
     {402, S_ID3,  INTEL_7I,  0,   3,     0,   0xe6,     0x02,  "BaClrBad"  }, // MG added
     {403, S_ID3,  INTEL_7I,  0,   3,     0,   0xe8,     0x01,  "BaClrEly"  }, // MG added
     {404, S_ID3,  INTEL_7I,  0,   3,     0,   0xe8,     0x02,  "BaClrL8"  }, // MG added
+    {410, S_ID3,  INTEL_7I, 0,  3,     0,   0xe6,     0x1f, "BaClrAny"  }, // MG added
     {205, S_ID3,  INTEL_7,   0,   3,     0,   0xe6,      2,   "BTBMiss"    }, // static branch prediction made, Sandy Bridge
     {220, S_ID3,  INTEL_IVY, 0,   3,     0,   0x58,     0x03, "Mov elim"   }, // register moves eliminated
     {221, S_ID3,  INTEL_IVY, 0,   3,     0,   0x58,     0x0C, "Mov elim-"  }, // register moves elimination unsuccessful
@@ -925,10 +926,9 @@ SCounterDefinition CounterDefinitions[] = {
     {156, S_ID3,  INTEL_HASW, 0,  3,     0,   0xa1,     0x40, "uop p6"     }, // uops port 6.
     {157, S_ID3,  INTEL_HASW, 0,  3,     0,   0xa1,     0x80, "uop p7"     }, // uops port 7.
     {160, S_ID3,  INTEL_HASW, 0,  3,     0,   0xa1,     0xFF, "uop p07"    }, // uops port 0 - 7
+    {410, S_ID3,  INTEL_HASW, 0,  3,     0,   0xe6,     0x1f, "BaClrAny"  }, // MG added
     // Following are ones MG added; spec is vague on whether these exist in Haswell
     {400, S_ID3,  INTEL_HASW, 0,  3,     0,   0xa7,     0x01,  "BaClrFIq"  }, // MG added
-    {401, S_ID3,  INTEL_HASW, 0,  3,     0,   0xe6,     0x01,  "BaClrClr"  }, // MG added
-    {402, S_ID3,  INTEL_HASW, 0,  3,     0,   0xe6,     0x02,  "BaClrBad"  }, // MG added
     {403, S_ID3,  INTEL_HASW, 0,  3,     0,   0xe8,     0x01,  "BaClrEly"  }, // MG added
     {404, S_ID3,  INTEL_HASW, 0,  3,     0,   0xe8,     0x02,  "BaClrL8"  }, // MG added
 

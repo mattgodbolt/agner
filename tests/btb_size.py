@@ -30,7 +30,7 @@ OneJump
 nop
 %endrep
 """.format(num_branches=num_branches, align=align)
-    r = run_test(test_code, [1, 401, 403, 404], repetitions=100)
+    r = run_test(test_code, [1, 410, 403, 404], repetitions=100)
     print r
     return {key:min([x[key] for x in r]) for key in r[0].keys()}
 
@@ -78,7 +78,7 @@ def run_tests():
         for num in nums:
             res = btb_size_test("BTB size test %d branches aligned on %d" % (num, align), num, align)
             exp = num * 100.0 # number of branches under test
-            resteer[-1].append(res['BaClrClr'] / exp)
+            resteer[-1].append(res['BaClrAny'] / exp)
             early[-1].append(res['BaClrEly'] / exp)
             late[-1].append(res['BaClrL8'] / exp)
             core[-1].append(res['Core cyc'])
