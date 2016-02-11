@@ -841,6 +841,8 @@ SCounterDefinition CounterDefinitions[] = {
     {311, S_ID2, P_ALL,   0,   1,     0,   0x29,     0x0f, "L1D Miss"  }, // level 2 cache data fetch
     {320, S_ID2, P_ALL,   0,   1,     0,   0x24,     0x00, "L2 Miss"   }, // level 2 cache miss
 
+    {410, S_ID2,  P_ALL, 0,  3,     0,   0xe6,     0x1, "BaClrAny"  }, // MG added
+
     // Nehalem, Sandy Bridge, Ivy Bridge
     // The first three counters are fixed-function counters having their own register,
     // The rest of the counters are competing for the same counter registers.
