@@ -193,7 +193,7 @@ UserData           times 10000H  DB 0
 ;                  Test Loop
 ;
 ;------------------------------------------------------------------------------
-SECTION .text   align = 16
+SECTION .text   align = 32
 
 ;extern "C" int TestLoop (int thread) {
 ; This function runs the code to test REPETITIONS times
