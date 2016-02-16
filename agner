@@ -32,11 +32,13 @@ def uninstall_module(args):
 
 
 def run_tests(args):
+    import matplotlib.pyplot as plt
     if not os.path.exists("/dev/MSRdrv"):
         print "The performance counter driver is not loaded - please run 'agner install'"
         sys.exit(1)
     results = AGNER.run_tests(args.test)
     AGNER.plot_results(results)
+    plt.show()
 
 
 def test_only(args):
