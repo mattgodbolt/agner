@@ -67,6 +67,9 @@ align 16
     print
 
 
+def add_tests(agner):
+    pass # TODO
+
 def run_tests():
     branch_test("Ahead not taken", "jne $+4")
     branch_test("Behind not taken", "jne $-4")

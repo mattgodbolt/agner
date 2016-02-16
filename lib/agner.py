@@ -5,7 +5,60 @@ import subprocess
 import sys
 from argparse import ArgumentParser
 
+
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
+
+
+def filter_match(tests, test, subtest):
+    return True
+
+
+class Test(object):
+    def __init__(self, name, runner, plotter):
+        self.name = name
+        self.runner = runner
+        self.plotter = plotter
+
+
+class Agner(object):
+    def __init__(self):
+        self._tests = {}
+        self._cur_test = None
+
+    def tests(self):
+        return self._tests.keys()
+
+    def subtests(self, test):
+        return self._tests[test].keys()
+
+    def add_tests(self, name, module):
+        self._cur_test = name
+        self._tests[name] = {}
+        module.add_tests(self)
+        self._cur_test = None
+
+    def add_test(self, name, runner, plotter):
+        self._tests[self._cur_test][name] = Test(name, runner, plotter)
+
+    def run_tests(self, tests):
+        results = {}
+        for test, subtests in self._tests.iteritems():
+            results[test] = {}
+            for subtest, tester in subtests.iteritems():
+                if not filter_match(tests, test, subtest): continue
+                print "Running %s.%s ..." % (test, subtest)
+                results[test][subtest] = tester.runner()
+        return results
+
+    def plot_results(self, results, callback=None):
+        import matplotlib.pyplot as plt
+        for test, subtests in results.iteritems():
+            for subtest, result in subtests.iteritems():
+                tester = self._tests[test][subtest]
+                tester.plotter(result)
+                if callback:
+                    callback(test, subtest)
+        
 
 def run_test(test, counters, init_once="", init_each="", repetitions=3, procs=1):
     os.chdir(os.path.join(THIS_DIR, "..", "src"))
@@ -45,6 +98,7 @@ def run_test(test, counters, init_once="", init_each="", repetitions=3, procs=1)
         else:
             results.append(dict(zip(header, [int(x) for x in split])))
     return results
+
 
 def print_test(*args, **kwargs):
     results = run_test(*args, **kwargs)

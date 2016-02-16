@@ -3,3 +3,4 @@
 core
 core.*
 *.pyc
+results.json
