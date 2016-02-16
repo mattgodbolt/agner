@@ -10,7 +10,12 @@ THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def filter_match(tests, test, subtest):
-    return True
+    # Somewhat ropey 'wildcard' matching
+    if not tests: return True
+    for match in tests:
+        if match == '%s.%s' % (test, subtest): return True
+        if match == '%s.*' % (test,): return True
+    return False
 
 
 class Test(object):
