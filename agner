@@ -45,6 +45,7 @@ def test_only(args):
     if not os.path.exists("/dev/MSRdrv"):
         print "The performance counter driver is not loaded - please run 'agner install'"
         sys.exit(1)
+    print args.results_file
     with open(args.results_file, 'w') as out:
         results = AGNER.run_tests(args.test)
         json.dump(results, out)

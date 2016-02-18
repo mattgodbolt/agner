@@ -105,6 +105,30 @@ def run_test(test, counters, init_once="", init_each="", repetitions=3, procs=1)
     return results
 
 
+class MergeError(RuntimeError):
+    pass
+
+
+def merge_results(previous, new, threshold=0.15):
+    if previous == None: return new
+    if len(previous) != len(new):
+        raise RuntimeError("Badly sized results")
+    for index in range(len(previous)):
+        prev_item = previous[index]
+        new_item = new[index]
+        for key in prev_item.iterkeys():
+            if key in new_item:
+                delta = abs(prev_item[key] - new_item[key])
+                delta_ratio = delta / float(prev_item[key])
+                print key, delta_ratio
+                if delta_ratio > threshold:
+                    raise MergeError("Unable to get a stable merge for " + key)  # TODO better
+        for key in new_item.iterkeys():
+            if key not in prev_item:
+                prev_item[key] = new_item[key]
+    return previous
+
+
 def print_test(*args, **kwargs):
     results = run_test(*args, **kwargs)
     for result in results:

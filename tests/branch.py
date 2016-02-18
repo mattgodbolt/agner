@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from lib.agner import print_test
+from lib.agner import run_test, merge_results, MergeError
 
 
 SCRAMBLE_BTB = """
@@ -35,9 +35,6 @@ ScrambleBTB:
 """
 
 def branch_test(name, instr, backwards=False):
-    print "*" * 78
-    print name
-    print "*" * 78
     extra_begin = ""
     extra_end = ""
     if backwards:
@@ -61,20 +58,54 @@ align 16
 %ENDREP
 align 16
 """ + extra_end
-    print_test(test_code, [1, 9, 207, 400], init_each=SCRAMBLE_BTB)
-    print_test(test_code, [1, 9, 401, 402], init_each=SCRAMBLE_BTB)
-    print_test(test_code, [1, 9, 403, 404], init_each=SCRAMBLE_BTB)
-    print
+    merge_error = None
+    # TODO: do we actually need this? If so, should extract and put in agner
+    for attempt in range(10):
+        results = None
+        try:
+            for counters in ([1, 9, 207, 400], [1, 9, 401, 402], [1, 9, 404]):
+                results = merge_results(results, run_test(test_code, counters, init_each=SCRAMBLE_BTB))
+            return results
+        except MergeError, e:
+            merge_error = e
+    raise merge_error
+
+
+def branch_plot(name, results):
+    if not results: return
+    for res in results:
+        del res['Clock']
+        del res['Instruct']
+        del res['Core cyc']
+    import matplotlib.pyplot as plt
+    from matplotlib.pyplot import cm
+    import numpy as np
+    fig, ax = plt.subplots()
+    fig.canvas.set_window_title(name)
+    num_samples = len(results)
+    num_counters = len(results[0])
+    width = 1.0 / (num_counters + 1)
+    rects = []
+    color = cm.rainbow(np.linspace(0, 1, num_counters))
+    for counter_index in range(num_counters):
+        counter_name = results[0].keys()[counter_index]
+        xs = np.arange(num_samples) + width * counter_index
+        ys = [a[counter_name] for a in results]
+        rects.append(ax.bar(xs, ys, width, color=color[counter_index]))
+    ax.set_ylabel("Count")
+    ax.set_xlabel("Run #")
+    ax.set_title(name)
+    ax.legend((x[0] for x in rects), results[0].keys())
+
+
+def add_test(agner, name, instr, backwards=False):
+    test = lambda: branch_test(name, instr, backwards)
+    plot = lambda results : branch_plot(name, results)
+    agner.add_test(name, test, plot)
 
 
 def add_tests(agner):
-    pass # TODO
-
-def run_tests():
-    branch_test("Ahead not taken", "jne $+4")
-    branch_test("Behind not taken", "jne $-4")
-    branch_test("Ahead taken", "je $+4")
-    branch_test("Behind taken", "je $-16-8", True)
-
-if __name__ == "__main__":
-    run_tests()
+    add_test(agner, "Ahead not taken", "jne $+4")
+    add_test(agner, "Behind not taken", "jne $-4")
+    add_test(agner, "Ahead taken", "je $+4")
+    add_test(agner, "Behind taken", "je $-16-8", True)
