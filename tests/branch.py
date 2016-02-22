@@ -100,7 +100,7 @@ def branch_plot(name, results):
 
 def add_test(agner, name, instr, backwards=False):
     test = lambda: branch_test(name, instr, backwards)
-    plot = lambda results : branch_plot(name, results)
+    plot = lambda results, alt : branch_plot(name, results)
     agner.add_test(name, test, plot)
 
 

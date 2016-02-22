@@ -55,12 +55,13 @@ class Agner(object):
                 results[test][subtest] = tester.runner()
         return results
 
-    def plot_results(self, results, callback=None):
+    def plot_results(self, results, tests, alternative, callback=None):
         import matplotlib.pyplot as plt
         for test, subtests in results.iteritems():
             for subtest, result in subtests.iteritems():
+                if not filter_match(tests, test, subtest): continue
                 tester = self._tests[test][subtest]
-                tester.plotter(result)
+                tester.plotter(result, alternative)
                 if callback:
                     callback(test, subtest)
         

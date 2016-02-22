@@ -34,12 +34,16 @@ def plot(xs, ys, result, name, index):
     import numpy as np
     import matplotlib.pyplot as plt
 
-    ax = plt.subplot(2, 2, index)
+    if index:
+        ax = plt.subplot(2, 2, index)
+    else:
+        ax = plt.subplot(1, 1, 1)
     ax.set_yscale('log', basey=2)
     plt.title(name)
     
     plt.xlabel("Branch count")
     plt.ylabel("Branch alignment")
+    ax.xaxis.set_ticks(xs)
     xs = np.array(xs + [xs[-1] + 1])
     ys = np.array(ys + [ys[-1] * 2])
     xx, yy = np.meshgrid(xs, ys)
@@ -68,20 +72,25 @@ def btb_test(nums, aligns, name):
     return {'resteer': resteer, 'early': early, 'late': late, 'core': core}
 
 
-def btb_plot(nums, aligns, name, results):
+def btb_plot(nums, aligns, name, results, alt):
     import matplotlib.pyplot as plt
     fig = plt.figure()
+    locs, labels = plt.xticks()
+    plt.setp(labels, rotation=90)
     plt.title(name)
     fig.canvas.set_window_title(name)
-    plot(nums, aligns, results['resteer'], "Front-end re-steers", 1)
-    plot(nums, aligns, results['early'], "Early clears", 2)
-    plot(nums, aligns, results['late'], "Late clears", 3)
-    plot(nums, aligns, results['core'], "Core cycles/branch", 4)
+    if alt:
+        plot(nums, aligns, results['resteer'], "Front-end re-steers", 0)
+    else:
+        plot(nums, aligns, results['resteer'], "Front-end re-steers", 1)
+        plot(nums, aligns, results['early'], "Early clears", 2)
+        plot(nums, aligns, results['late'], "Late clears", 3)
+        plot(nums, aligns, results['core'], "Core cycles/branch", 4)
 
 
 def add_test(agner, nums, aligns, name):
     test = lambda: btb_test(nums, aligns, name)
-    plot = lambda results : btb_plot(nums, aligns, name, results)
+    plot = lambda results, alt : btb_plot(nums, aligns, name, results, alt)
     agner.add_test(name, test, plot)
 
 

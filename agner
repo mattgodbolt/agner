@@ -37,7 +37,7 @@ def run_tests(args):
         print "The performance counter driver is not loaded - please run 'agner install'"
         sys.exit(1)
     results = AGNER.run_tests(args.test)
-    AGNER.plot_results(results)
+    AGNER.plot_results(results, args.test, args.alternative)
     plt.show()
 
 
@@ -51,6 +51,10 @@ def test_only(args):
         json.dump(results, out)
 
 
+def safe_name(name):
+    return name.replace(' ', '_').lower()
+
+
 def plot(args):
     import matplotlib.pyplot as plt
     with open(args.results_file, 'r') as inp:
@@ -58,9 +62,17 @@ def plot(args):
     if args.pdf:
         from matplotlib.backends.backend_pdf import PdfPages
         with PdfPages(args.pdf) as pdf:
-            AGNER.plot_results(results, lambda x,y: pdf.savefig())
+            AGNER.plot_results(results, args.test, args.alternative, lambda x,y: pdf.savefig())
+    elif args.png:
+        def save_pic(test, subtest):
+            plt.gcf().set_size_inches(args.xsize, args.ysize)
+            plt.gcf().set_dpi(args.dpi)
+            test = safe_name(test)
+            subtest = safe_name(subtest)
+            plt.savefig(args.png.format(test=test, subtest=subtest), dpi=plt.gcf().get_dpi())
+        AGNER.plot_results(results, args.test, args.alternative, save_pic)
     else:
-        AGNER.plot_results(results)
+        AGNER.plot_results(results, args.test, args.alternative)
         plt.show()
 
 
@@ -83,7 +95,12 @@ COMMANDS = {
 parser = ArgumentParser(description='Test various microarchitecture parameters')
 parser.add_argument('-r', '--results-file', default='results.json',
         help='read or write results to FILE', metavar='FILE')
+parser.add_argument('--xsize', help='set plot X size in inches', metavar='INCHES', default=8, type=float)
+parser.add_argument('--ysize', help='set plot Y size in inches', metavar='INCHES', default=6, type=float)
+parser.add_argument('--dpi', help='set plot DPI', metavar='DPI', default=100, type=float)
+parser.add_argument('--alternative', help='output alternative graph', default=False, action='store_true')
 parser.add_argument('--pdf', help='output plot as PDF', metavar='PDF')
+parser.add_argument('--png', help='output plots as template formatted with {test} {subtest}', metavar='template')
 parser.add_argument('command', nargs=1, choices=COMMANDS.keys())
 parser.add_argument('test', nargs='*', help='run test TEST', metavar='TEST')
 
