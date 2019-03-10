@@ -118,7 +118,7 @@ static long MSRdrv_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
 #ifdef ACCESSPROBLEM   // use this if driver cannot access user memory. this occurs rarely
 
     struct SMSRInOut commands[MAX_QUE_ENTRIES];
-    copy_from_user(commands, commandp, sizeof(commands));
+    raw_copy_from_user(commands, commandp, sizeof(commands));
 
 #else
 #define commands commandp
@@ -176,7 +176,7 @@ static long MSRdrv_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
 
 #ifdef ACCESSPROBLEM   // use this if driver cannot access user memory. this occurs rarely
 
-        copy_to_user(commandp, commands, sizeof(commands));
+       raw_copy_to_user(commandp, commands, sizeof(commands));
 
 #endif
 
