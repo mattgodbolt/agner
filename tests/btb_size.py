@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from lib.agner import run_test
+from agner.agner import run_test
 
 
 def btb_size_test(name, num_branches, align):

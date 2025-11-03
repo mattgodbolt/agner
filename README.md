@@ -40,22 +40,22 @@ make driver   # Install kernel driver (requires sudo)
 
 ```bash
 # List available tests
-uv run python agner list
+uv run agner list
 
 # Run all tests with interactive plots
-uv run python agner run
+uv run agner run
 
 # Run specific test
-uv run python agner run branch.Ahead_not_taken
+uv run agner run branch.Ahead_not_taken
 
 # Save results to JSON
-uv run python agner test_only -r results.json
+uv run agner test_only -r results.json
 
 # Plot existing results
-uv run python agner plot -r results.json
+uv run agner plot -r results.json
 
 # Export as PDF
-uv run python agner plot -r results.json --pdf output.pdf
+uv run agner plot -r results.json --pdf output.pdf
 ```
 
 ## Available Commands

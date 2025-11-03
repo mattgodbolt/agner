@@ -8,9 +8,9 @@ import subprocess
 import sys
 from argparse import ArgumentParser
 
-from lib.agner import Agner
+from agner.agner import Agner
 
-ROOT = os.path.dirname(os.path.realpath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 TEST_PYS = sorted([os.path.splitext(os.path.basename(x))[0] for x in glob.glob(os.path.join(ROOT, "tests", "*.py"))])
 AGNER = Agner()
 

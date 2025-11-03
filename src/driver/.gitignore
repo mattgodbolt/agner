@@ -1,6 +1,6 @@
 *.cmd
 .tmp_versions
 *.ko
-MSRdrv.mod.*
+*.mod*
 Module.symvers
 modules.order

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from lib.agner import MergeError, merge_results, run_test
+from agner.agner import MergeError, merge_results, run_test
 
 SCRAMBLE_BTB = """
 ; Proven effective at "scrambling" the BTB/BPU for an Arrendale M520

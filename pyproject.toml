@@ -9,10 +9,10 @@ dependencies = [
 ]
 
 [project.scripts]
-agner = "agner_main:main"
+agner = "agner.main:main"
 
 [tool.uv]
-package = false
+package = true
 
 [dependency-groups]
 dev = [

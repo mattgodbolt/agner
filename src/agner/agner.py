@@ -67,7 +67,7 @@ class Agner:
 
 
 def run_test(test, counters, init_once="", init_each="", repetitions=3, procs=1):
-    os.chdir(os.path.join(THIS_DIR, "..", "src"))
+    os.chdir(os.path.join(THIS_DIR, ".."))
     sys.stdout.flush()
     subprocess.check_call(["make", "-s", "out/a64.o"])
 
