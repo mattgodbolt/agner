@@ -5,6 +5,8 @@ import subprocess
 import sys
 from typing import Any, Callable, Protocol
 
+from agner.counters import get_counter_db
+
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # Type aliases
@@ -96,7 +98,7 @@ class Agner:
 
 def run_test(
     test: str,
-    counters: list[int],
+    counters: list[int | str],
     init_once: str = "",
     init_each: str = "",
     repetitions: int = 3,
@@ -106,8 +108,15 @@ def run_test(
     sys.stdout.flush()
     subprocess.check_call(["make", "-s", "out/a64.o"])
 
+    # Convert counter names to IDs and validate
+    db = get_counter_db()
+    counter_ids, errors = db.validate_counters(counters)
+    if errors:
+        error_msg = "Counter validation failed:\n" + "\n".join(f"  - {err}" for err in errors)
+        raise ValueError(error_msg)
+
     with open("out/counters.inc", "w") as cf:
-        [cf.write(f"    DD {counter}\n") for counter in counters]
+        [cf.write(f"    DD {counter}\n") for counter in counter_ids]
 
     with open("out/test.inc", "w") as tf:
         tf.write(test)

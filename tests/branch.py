@@ -72,12 +72,17 @@ align 16
     for _attempt in range(10):
         results: TestResults | None = None
         try:
-            for counters in ([1, 9, 207, 400], [1, 9, 401, 402], [1, 9, 404]):
+            for counters in (
+                ["Core cyc", "Instruct", "BrMispred", "BaClrFIq"],
+                ["Core cyc", "Instruct", "BaClrClr", "BaClrBad"],
+                ["Core cyc", "Instruct", "BaClrL8"],
+            ):
                 results = merge_results(results, run_test(test_code, counters, init_each=SCRAMBLE_BTB))
             assert results is not None  # Should have results from the loop above
             return results
-        except MergeError as e:
-            merge_error = e
+        except (MergeError, ValueError) as e:
+            # ValueError can occur if counters aren't supported on this CPU
+            merge_error = e if isinstance(e, MergeError) else MergeError(str(e))
     # If we get here, all attempts failed
     assert merge_error is not None  # At least one attempt must have raised MergeError
     raise merge_error

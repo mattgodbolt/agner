@@ -30,7 +30,7 @@ OneJump
 nop
 %endrep
 """
-    r = run_test(test_code, [1, 410, 403, 404], repetitions=100)
+    r = run_test(test_code, ["Core cyc", "BaClrAny", "BaClrEly", "BaClrL8"], repetitions=100)
     return min(r, key=lambda x: x["BaClrAny"])
 
 
