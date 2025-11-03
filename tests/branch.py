@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.pyplot import cm
 
 from agner.agner import MergeError, merge_results, run_test
 
@@ -82,9 +85,6 @@ def branch_plot(name, results):
         del res["Clock"]
         del res["Instruct"]
         del res["Core cyc"]
-    import matplotlib.pyplot as plt
-    import numpy as np
-    from matplotlib.pyplot import cm
 
     fig, ax = plt.subplots()
     fig.canvas.set_window_title(name)

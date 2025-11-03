@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import matplotlib.pyplot as plt
+import numpy as np
 
 from agner.agner import run_test
 
@@ -28,9 +30,6 @@ nop
 
 
 def plot(xs, ys, result, name, index):
-    import matplotlib.pyplot as plt
-    import numpy as np
-
     if index:
         ax = plt.subplot(2, 2, index)
     else:
@@ -70,8 +69,6 @@ def btb_test(nums, aligns, name):
 
 
 def btb_plot(nums, aligns, name, results, alt):
-    import matplotlib.pyplot as plt
-
     fig = plt.figure()
     locs, labels = plt.xticks()
     plt.setp(labels, rotation=90)

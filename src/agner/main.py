@@ -4,9 +4,13 @@ import glob
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 from argparse import ArgumentParser
+
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
 from agner.agner import Agner
 
@@ -39,8 +43,6 @@ def uninstall_module(args):
 
 def check_prerequisites():
     """Check that required tools are available"""
-    import shutil
-
     if not os.path.exists("/dev/MSRdrv"):
         print("Error: The performance counter driver is not loaded")
         print("Run 'uv run agner install' to install the kernel driver")
@@ -53,8 +55,6 @@ def check_prerequisites():
 
 
 def run_tests(args):
-    import matplotlib.pyplot as plt
-
     check_prerequisites()
     results = AGNER.run_tests(args.test)
     AGNER.plot_results(results, args.test, args.alternative)
@@ -74,13 +74,9 @@ def safe_name(name):
 
 
 def plot(args):
-    import matplotlib.pyplot as plt
-
     with open(args.results_file) as inp:
         results = json.load(inp)
     if args.pdf:
-        from matplotlib.backends.backend_pdf import PdfPages
-
         with PdfPages(args.pdf) as pdf:
             AGNER.plot_results(results, args.test, args.alternative, lambda x, y: pdf.savefig())
     elif args.png:
