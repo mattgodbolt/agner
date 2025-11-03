@@ -198,6 +198,16 @@ SCounterDefinition CounterDefinitions[] = {
     {403, S_ID3,  INTEL_HASW, 0,  3,     0,   0xe8,     0x01,  "BaClrEly"  }, // MG added
     {404, S_ID3,  INTEL_HASW, 0,  3,     0,   0xe8,     0x02,  "BaClrL8"  }, // MG added
 
+    // Intel Broadwell, Skylake, Kaby/Coffee/Comet Lake, Ice Lake, Tiger Lake:
+    // These architectures share the same PMC architecture (S_ID3) and similar event encodings
+    // Based on Intel perfmon JSON data from https://github.com/intel/perfmon
+    //  id   scheme  cpu         countregs eventreg event  mask   name
+    {1,   S_ID3, (EProcFamily)(INTEL_BROADWELL|INTEL_SKYLAKE|INTEL_KABYLAKE|INTEL_ICELAKE|INTEL_TIGERLAKE), 0x40000002, 0, 0, 0, 0, "Core cyc"}, // Core clock cycles (fixed counter)
+    {9,   S_ID3, (EProcFamily)(INTEL_BROADWELL|INTEL_SKYLAKE|INTEL_KABYLAKE|INTEL_ICELAKE|INTEL_TIGERLAKE), 0x40000000, 0, 0, 0, 0, "Instruct"}, // Instructions retired (fixed counter)
+    {207, S_ID3, (EProcFamily)(INTEL_BROADWELL|INTEL_SKYLAKE|INTEL_KABYLAKE|INTEL_ICELAKE|INTEL_TIGERLAKE), 0, 3, 0, 0xc5, 0x00, "BrMispred"}, // BR_MISP_RETIRED.ALL_BRANCHES
+    {410, S_ID3, (EProcFamily)(INTEL_BROADWELL|INTEL_SKYLAKE|INTEL_KABYLAKE|INTEL_ICELAKE|INTEL_TIGERLAKE), 0, 3, 0, 0xe6, 0x01, "BaClrAny"}, // BACLEARS.ANY
+    {411, S_ID3, (EProcFamily)(INTEL_BROADWELL|INTEL_SKYLAKE|INTEL_KABYLAKE|INTEL_ICELAKE|INTEL_TIGERLAKE), 0, 3, 0, 0x0d, 0x80, "ClrRestr"}, // INT_MISC.CLEAR_RESTEER_CYCLES
+
     // Intel Atom:
     // The first counter is fixed-function counter having its own register,
     // The rest of the counters are competing for the same two counter registers.

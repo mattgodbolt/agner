@@ -16,6 +16,7 @@ private:
     EProcVendor vendor;
     EProcFamily family;
     EPMCScheme scheme;
+    int model;
 
     void DetectVendor() {
         int CpuIdOutput[4];
@@ -43,16 +44,17 @@ private:
 
     void DetectFamily() {
         int CpuIdOutput[4];
-        int Family, Model;
+        int Family;
 
         family = P_UNKNOWN;
+        model = 0;
 
         Cpuid(CpuIdOutput, 0);
         if (CpuIdOutput[0] == 0) return;
 
         Cpuid(CpuIdOutput, 1);
         Family = ((CpuIdOutput[0] >> 8) & 0x0F) + ((CpuIdOutput[0] >> 20) & 0xFF);
-        Model  = ((CpuIdOutput[0] >> 4) & 0x0F) | ((CpuIdOutput[0] >> 12) & 0xF0);
+        model  = ((CpuIdOutput[0] >> 4) & 0x0F) | ((CpuIdOutput[0] >> 12) & 0xF0);
 
         if (vendor == INTEL) {
             if (Family <  5)    family = P_UNKNOWN;
@@ -60,18 +62,44 @@ private:
             if (Family == 0x0F) family = INTEL_P4;
             if (Family == 6) {
                 family = INTEL_P23;
-                if (Model == 0x09) family = INTEL_PM;
-                if (Model == 0x0D) family = INTEL_PM;
-                if (Model == 0x0E) family = INTEL_CORE;
-                if (Model == 0x0F) family = INTEL_CORE2;
-                if (Model == 0x16) family = INTEL_CORE2;
-                if (Model == 0x17) family = INTEL_CORE2;
-                if (Model == 0x1A) family = INTEL_7;
-                if (Model == 0x1C) family = INTEL_ATOM;
-                if (Model >= 0x1D) family = INTEL_7;
-                if (Model == 0x3A) family = INTEL_IVY;
-                if (Model == 0x3E) family = INTEL_IVY;
-                if (Model >= 0x3F) family = INTEL_HASW;
+                if (model == 0x09) family = INTEL_PM;
+                if (model == 0x0D) family = INTEL_PM;
+                if (model == 0x0E) family = INTEL_CORE;
+                if (model == 0x0F) family = INTEL_CORE2;
+                if (model == 0x16) family = INTEL_CORE2;
+                if (model == 0x17) family = INTEL_CORE2;
+                if (model == 0x1A) family = INTEL_7;        // Nehalem
+                if (model == 0x1C) family = INTEL_ATOM;    // Atom
+                if (model >= 0x1D) family = INTEL_7;       // Sandy Bridge and others
+                if (model == 0x3A || model == 0x3E) family = INTEL_IVY; // Ivy Bridge
+
+                // Haswell (4th gen): 0x3C, 0x3F, 0x45, 0x46
+                if (model == 0x3C || model == 0x3F || model == 0x45 || model == 0x46)
+                    family = INTEL_HASW;
+
+                // Broadwell (5th gen): 0x3D, 0x47, 0x4F, 0x56
+                if (model == 0x3D || model == 0x47 || model == 0x4F || model == 0x56)
+                    family = INTEL_BROADWELL;
+
+                // Skylake (6th gen): 0x4E, 0x5E, 0x55 (includes server)
+                if (model == 0x4E || model == 0x5E || model == 0x55)
+                    family = INTEL_SKYLAKE;
+
+                // Kaby/Coffee/Comet Lake (7th-10th gen, 14nm): 0x8E, 0x9E, 0xA5, 0xA6
+                if (model == 0x8E || model == 0x9E || model == 0xA5 || model == 0xA6)
+                    family = INTEL_KABYLAKE;
+
+                // Ice Lake (10th gen, 10nm): 0x7D, 0x7E, 0x6A, 0x6C
+                if (model == 0x7D || model == 0x7E || model == 0x6A || model == 0x6C)
+                    family = INTEL_ICELAKE;
+
+                // Tiger Lake (11th gen): 0x8C, 0x8D
+                if (model == 0x8C || model == 0x8D)
+                    family = INTEL_TIGERLAKE;
+
+                // For newer/unknown models, default to Haswell as fallback
+                if (family == INTEL_P23 && model >= 0x3F)
+                    family = INTEL_HASW;
             }
         }
         else if (vendor == AMD) {
@@ -81,7 +109,7 @@ private:
             if (Family >= 0x15) family = AMD_BULLD;
         }
         else if (vendor == VIA) {
-            if (Family == 6 && Model >= 0x0F) family = VIA_NANO;
+            if (Family == 6 && model >= 0x0F) family = VIA_NANO;
         }
     }
 
@@ -113,7 +141,10 @@ private:
                 case INTEL_P4: scheme = S_P4; break;
                 case INTEL_CORE: scheme = S_ID1; break;
                 case INTEL_CORE2: scheme = S_ID2; break;
-                case INTEL_7: case INTEL_ATOM: case INTEL_IVY: case INTEL_HASW: scheme = S_ID3; break;
+                case INTEL_7: case INTEL_IVY: case INTEL_HASW: case INTEL_BROADWELL:
+                case INTEL_SKYLAKE: case INTEL_KABYLAKE: case INTEL_ICELAKE: case INTEL_TIGERLAKE:
+                case INTEL_ATOM:
+                    scheme = S_ID3; break;
                 default: break;
                 }
             }
@@ -129,15 +160,17 @@ public:
 
     EPMCScheme GetScheme() const { return scheme; }
     EProcFamily GetFamily() const { return family; }
+    int GetModel() const { return model; }
 };
 
 int main() {
     SimpleCPU cpu;
     EPMCScheme scheme = cpu.GetScheme();
     EProcFamily family = cpu.GetFamily();
+    int model = cpu.GetModel();
 
     // Debug output (to stderr so it doesn't interfere with CSV)
-    fprintf(stderr, "Detected CPU - Scheme: 0x%x, Family: 0x%x\n", scheme, family);
+    fprintf(stderr, "Detected CPU - Model: 0x%x, Scheme: 0x%x, Family: 0x%x\n", model, scheme, family);
 
     // Print CSV header
     printf("counter_id,name,supported,scheme,family\n");

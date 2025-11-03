@@ -73,8 +73,13 @@ enum EProcFamily {
     INTEL_7      = 0x40,                    // Intel Core i7, Nehalem, Sandy Bridge
     INTEL_IVY    = 0x80,                    // Intel Ivy Bridge
     INTEL_7I     = 0xC0,                    // Nehalem, Sandy Bridge, Ivy bridge
-    INTEL_HASW   = 0x100,                   // Intel Haswell and later
+    INTEL_HASW   = 0x100,                   // Intel Haswell
+    INTEL_BROADWELL = 0x200,                // Intel Broadwell (5th gen)
+    INTEL_SKYLAKE = 0x400,                  // Intel Skylake (6th gen)
+    INTEL_KABYLAKE = 0x800,                 // Intel Kaby/Coffee/Comet Lake (7th-10th gen, 14nm)
     INTEL_ATOM   = 0x1000,                  // Intel Atom
+    INTEL_ICELAKE = 0x2000,                 // Intel Ice Lake (10th gen, 10nm)
+    INTEL_TIGERLAKE = 0x4000,               // Intel Tiger Lake (11th gen)
 
     AMD_ATHLON   = 0x10000,                 // AMD Athlon
     AMD_ATHLON64 = 0x20000,                 // AMD Athlon 64 or Opteron

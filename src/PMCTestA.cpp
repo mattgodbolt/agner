@@ -11,7 +11,7 @@
 // Run as administrator, with driver signature enforcement off.
 // See PMCTest.txt for further instructions.
 //
-// © 2000-2013 GNU General Public License www.gnu.org/licenses
+// ï¿½ 2000-2013 GNU General Public License www.gnu.org/licenses
 //////////////////////////////////////////////////////////////////////////////
 
 #include "PMCTest.h"
@@ -394,9 +394,35 @@ void CCounters::GetProcessorFamily() {
             if (Model == 0x1A) MFamily = INTEL_7;        // Core i7, Nehalem
             if (Model == 0x1C) MFamily = INTEL_ATOM;     // Atom
             if (Model >= 0x1D) MFamily = INTEL_7;        // Nehalem, Sandy Bridge
-            if (Model == 0x3A) MFamily = INTEL_IVY;      // Ivy Bridge
-            if (Model == 0x3E) MFamily = INTEL_IVY;      // Ivy Bridge (e.g. E5-2667 v2)
-            if (Model >= 0x3F) MFamily = INTEL_HASW;     // Haswell
+            if (Model == 0x3A || Model == 0x3E) MFamily = INTEL_IVY; // Ivy Bridge
+
+            // Haswell (4th gen): 0x3C, 0x3F, 0x45, 0x46
+            if (Model == 0x3C || Model == 0x3F || Model == 0x45 || Model == 0x46)
+                MFamily = INTEL_HASW;
+
+            // Broadwell (5th gen): 0x3D, 0x47, 0x4F, 0x56
+            if (Model == 0x3D || Model == 0x47 || Model == 0x4F || Model == 0x56)
+                MFamily = INTEL_BROADWELL;
+
+            // Skylake (6th gen): 0x4E, 0x5E, 0x55 (includes server)
+            if (Model == 0x4E || Model == 0x5E || Model == 0x55)
+                MFamily = INTEL_SKYLAKE;
+
+            // Kaby/Coffee/Comet Lake (7th-10th gen, 14nm): 0x8E, 0x9E, 0xA5, 0xA6
+            if (Model == 0x8E || Model == 0x9E || Model == 0xA5 || Model == 0xA6)
+                MFamily = INTEL_KABYLAKE;
+
+            // Ice Lake (10th gen, 10nm): 0x7D, 0x7E, 0x6A, 0x6C
+            if (Model == 0x7D || Model == 0x7E || Model == 0x6A || Model == 0x6C)
+                MFamily = INTEL_ICELAKE;
+
+            // Tiger Lake (11th gen): 0x8C, 0x8D
+            if (Model == 0x8C || Model == 0x8D)
+                MFamily = INTEL_TIGERLAKE;
+
+            // For newer/unknown models, default to Haswell as fallback
+            if (MFamily == INTEL_P23 && Model >= 0x3F)
+                MFamily = INTEL_HASW;
         }
     }
 
@@ -450,7 +476,7 @@ void CCounters::GetPMCScheme() {
             }
         }
         if (MScheme == S_UNKNOWN) {
-            // PMC scheme not defined by cpuid 
+            // PMC scheme not defined by cpuid
             switch (MFamily) {
             case INTEL_P1MMX:
                 MScheme = S_P1; break;
@@ -462,7 +488,9 @@ void CCounters::GetPMCScheme() {
                 MScheme = S_ID1; break;
             case INTEL_CORE2:
                 MScheme = S_ID2; break;
-            case INTEL_7: case INTEL_ATOM:
+            case INTEL_7: case INTEL_IVY: case INTEL_HASW: case INTEL_BROADWELL:
+            case INTEL_SKYLAKE: case INTEL_KABYLAKE: case INTEL_ICELAKE: case INTEL_TIGERLAKE:
+            case INTEL_ATOM:
                 MScheme = S_ID3; break;
             }
         }
