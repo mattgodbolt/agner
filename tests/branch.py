@@ -1,11 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import os
-import subprocess
-import sys
 
-from lib.agner import run_test, merge_results, MergeError
-
+from lib.agner import MergeError, merge_results, run_test
 
 SCRAMBLE_BTB = """
 ; Proven effective at "scrambling" the BTB/BPU for an Arrendale M520
@@ -34,6 +30,7 @@ ScrambleBTB:
     jnz .lp
 """
 
+
 def branch_test(name, instr, backwards=False):
     extra_begin = ""
     extra_end = ""
@@ -49,37 +46,46 @@ def branch_test(name, instr, backwards=False):
         align 16
         BranchTestEnd:
         """
-    test_code = """
+    test_code = (
+        """
 cmp ebp, ebp
-""" + extra_begin + """
+"""
+        + extra_begin
+        + """
 %REP 1000
 align 16
-""" + instr + """
+"""
+        + instr
+        + """
 %ENDREP
 align 16
-""" + extra_end
+"""
+        + extra_end
+    )
     merge_error = None
     # TODO: do we actually need this? If so, should extract and put in agner
-    for attempt in range(10):
+    for _attempt in range(10):
         results = None
         try:
             for counters in ([1, 9, 207, 400], [1, 9, 401, 402], [1, 9, 404]):
                 results = merge_results(results, run_test(test_code, counters, init_each=SCRAMBLE_BTB))
             return results
-        except MergeError, e:
+        except MergeError as e:
             merge_error = e
     raise merge_error
 
 
 def branch_plot(name, results):
-    if not results: return
+    if not results:
+        return
     for res in results:
-        del res['Clock']
-        del res['Instruct']
-        del res['Core cyc']
+        del res["Clock"]
+        del res["Instruct"]
+        del res["Core cyc"]
     import matplotlib.pyplot as plt
-    from matplotlib.pyplot import cm
     import numpy as np
+    from matplotlib.pyplot import cm
+
     fig, ax = plt.subplots()
     fig.canvas.set_window_title(name)
     num_samples = len(results)
@@ -87,20 +93,25 @@ def branch_plot(name, results):
     width = 1.0 / (num_counters + 1)
     rects = []
     color = cm.rainbow(np.linspace(0, 1, num_counters))
+    counter_names = list(results[0].keys())
     for counter_index in range(num_counters):
-        counter_name = results[0].keys()[counter_index]
+        counter_name = counter_names[counter_index]
         xs = np.arange(num_samples) + width * counter_index
         ys = [a[counter_name] for a in results]
         rects.append(ax.bar(xs, ys, width, color=color[counter_index]))
     ax.set_ylabel("Count")
     ax.set_xlabel("Run #")
     ax.set_title(name)
-    ax.legend((x[0] for x in rects), results[0].keys())
+    ax.legend((x[0] for x in rects), counter_names)
 
 
 def add_test(agner, name, instr, backwards=False):
-    test = lambda: branch_test(name, instr, backwards)
-    plot = lambda results, alt : branch_plot(name, results)
+    def test():
+        return branch_test(name, instr, backwards)
+
+    def plot(results, alt):
+        return branch_plot(name, results)
+
     agner.add_test(name, test, plot)
 
 

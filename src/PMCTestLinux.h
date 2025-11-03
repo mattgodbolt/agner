@@ -1,4 +1,4 @@
-//                     PMCTestLinux.h                    © 2012-03-02 Agner Fog
+//                     PMCTestLinux.h                    ï¿½ 2012-03-02 Agner Fog
 //
 //          Multithread PMC Test program
 //          System-specific definitions for Linux
@@ -91,9 +91,14 @@ static inline int Readpmc(int nPerfCtr) {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-// Declare the gettid syscall.
-//_syscall0(pid_t, gettid);
+// Declare the gettid syscall if not already available (glibc < 2.30)
+#ifndef __GLIBC_PREREQ
+#define __GLIBC_PREREQ(maj, min) 0
+#endif
+
+#if !__GLIBC_PREREQ(2, 30)
 static inline pid_t gettid(void) { return syscall(__NR_gettid); }
+#endif
 
 
 // Function declaration for thread procedure
