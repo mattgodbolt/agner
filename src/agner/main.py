@@ -37,21 +37,32 @@ def uninstall_module(args):
     subprocess.check_call(["sudo", "./uninstall.sh"], cwd=driver_dir)
 
 
+def check_prerequisites():
+    """Check that required tools are available"""
+    import shutil
+
+    if not os.path.exists("/dev/MSRdrv"):
+        print("Error: The performance counter driver is not loaded")
+        print("Run 'uv run agner install' to install the kernel driver")
+        sys.exit(1)
+
+    if not shutil.which("nasm"):
+        print("Error: nasm assembler not found")
+        print("Install with: sudo apt install nasm")
+        sys.exit(1)
+
+
 def run_tests(args):
     import matplotlib.pyplot as plt
 
-    if not os.path.exists("/dev/MSRdrv"):
-        print("The performance counter driver is not loaded - please run 'agner install'")
-        sys.exit(1)
+    check_prerequisites()
     results = AGNER.run_tests(args.test)
     AGNER.plot_results(results, args.test, args.alternative)
     plt.show()
 
 
 def test_only(args):
-    if not os.path.exists("/dev/MSRdrv"):
-        print("The performance counter driver is not loaded - please run 'agner install'")
-        sys.exit(1)
+    check_prerequisites()
     print(args.results_file)
     with open(args.results_file, "w") as out:
         results = AGNER.run_tests(args.test)
