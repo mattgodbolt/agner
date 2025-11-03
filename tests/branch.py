@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.pyplot import cm
 
-from agner.agner import MergeError, merge_results, run_test
+from agner.agner import Agner, MergeError, TestResults, merge_results, run_test
 
 SCRAMBLE_BTB = """
 ; Proven effective at "scrambling" the BTB/BPU for an Arrendale M520
@@ -34,7 +36,7 @@ ScrambleBTB:
 """
 
 
-def branch_test(name, instr, backwards=False):
+def branch_test(name: str, instr: str, backwards: bool = False) -> TestResults:
     extra_begin = ""
     extra_end = ""
     if backwards:
@@ -65,20 +67,23 @@ align 16
 """
         + extra_end
     )
-    merge_error = None
+    merge_error: MergeError | None = None
     # TODO: do we actually need this? If so, should extract and put in agner
     for _attempt in range(10):
-        results = None
+        results: TestResults | None = None
         try:
             for counters in ([1, 9, 207, 400], [1, 9, 401, 402], [1, 9, 404]):
                 results = merge_results(results, run_test(test_code, counters, init_each=SCRAMBLE_BTB))
+            assert results is not None  # Should have results from the loop above
             return results
         except MergeError as e:
             merge_error = e
+    # If we get here, all attempts failed
+    assert merge_error is not None  # At least one attempt must have raised MergeError
     raise merge_error
 
 
-def branch_plot(name, results):
+def branch_plot(name: str, results: TestResults) -> None:
     if not results:
         return
     for res in results:
@@ -87,12 +92,12 @@ def branch_plot(name, results):
         del res["Core cyc"]
 
     fig, ax = plt.subplots()
-    fig.canvas.set_window_title(name)
+    fig.canvas.set_window_title(name)  # type: ignore[attr-defined]
     num_samples = len(results)
     num_counters = len(results[0])
     width = 1.0 / (num_counters + 1)
     rects = []
-    color = cm.rainbow(np.linspace(0, 1, num_counters))
+    color = cm.rainbow(np.linspace(0, 1, num_counters))  # type: ignore[attr-defined]
     counter_names = list(results[0].keys())
     for counter_index in range(num_counters):
         counter_name = counter_names[counter_index]
@@ -105,17 +110,17 @@ def branch_plot(name, results):
     ax.legend((x[0] for x in rects), counter_names)
 
 
-def add_test(agner, name, instr, backwards=False):
-    def test():
+def add_test(agner: Agner, name: str, instr: str, backwards: bool = False) -> None:
+    def test() -> TestResults:
         return branch_test(name, instr, backwards)
 
-    def plot(results, alt):
+    def plot(results: TestResults, alt: bool) -> None:
         return branch_plot(name, results)
 
     agner.add_test(name, test, plot)
 
 
-def add_tests(agner):
+def add_tests(agner: Agner) -> None:
     add_test(agner, "Ahead not taken", "jne $+4")
     add_test(agner, "Behind not taken", "jne $-4")
     add_test(agner, "Ahead taken", "je $+4")

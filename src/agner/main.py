@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import glob
 import importlib.util
 import json
@@ -7,7 +9,8 @@ import os
 import shutil
 import subprocess
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
+from typing import Callable
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -23,25 +26,27 @@ AGNER = Agner()
 for test in set(TEST_PYS):
     test_path = os.path.join(ROOT, "tests", test + ".py")
     spec = importlib.util.spec_from_file_location(test, test_path)
+    assert spec is not None, f"Failed to load spec for {test_path}"
+    assert spec.loader is not None, f"Spec has no loader for {test_path}"
     test_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(test_module)
     AGNER.add_tests(test, test_module)
 
 
-def install_module(args):
+def install_module(args: Namespace) -> None:
     print("This will require superuser privileges; sudo will be called.")
     driver_dir = os.path.join(ROOT, "src", "driver")
     subprocess.check_call(["make"], cwd=driver_dir)
     subprocess.check_call(["sudo", "./install.sh"], cwd=driver_dir)
 
 
-def uninstall_module(args):
+def uninstall_module(args: Namespace) -> None:
     print("This will require superuser privileges; sudo will be called.")
     driver_dir = os.path.join(ROOT, "src", "driver")
     subprocess.check_call(["sudo", "./uninstall.sh"], cwd=driver_dir)
 
 
-def check_prerequisites():
+def check_prerequisites() -> None:
     """Check that required tools are available"""
     if not os.path.exists("/dev/MSRdrv"):
         print("Error: The performance counter driver is not loaded")
@@ -54,14 +59,14 @@ def check_prerequisites():
         sys.exit(1)
 
 
-def run_tests(args):
+def run_tests(args: Namespace) -> None:
     check_prerequisites()
     results = AGNER.run_tests(args.test)
     AGNER.plot_results(results, args.test, args.alternative)
     plt.show()
 
 
-def test_only(args):
+def test_only(args: Namespace) -> None:
     check_prerequisites()
     print(args.results_file)
     with open(args.results_file, "w") as out:
@@ -69,11 +74,11 @@ def test_only(args):
         json.dump(results, out)
 
 
-def safe_name(name):
+def safe_name(name: str) -> str:
     return name.replace(" ", "_").lower()
 
 
-def plot(args):
+def plot(args: Namespace) -> None:
     with open(args.results_file) as inp:
         results = json.load(inp)
     if args.pdf:
@@ -81,7 +86,7 @@ def plot(args):
             AGNER.plot_results(results, args.test, args.alternative, lambda x, y: pdf.savefig())
     elif args.png:
 
-        def save_pic(test, subtest):
+        def save_pic(test: str, subtest: str) -> None:
             plt.gcf().set_size_inches(args.xsize, args.ysize)
             plt.gcf().set_dpi(args.dpi)
             test = safe_name(test)
@@ -94,14 +99,14 @@ def plot(args):
         plt.show()
 
 
-def list_tests(args):
+def list_tests(args: Namespace) -> None:
     for test in AGNER.tests():
         print(f"{test}:")
         for subtest in AGNER.subtests(test):
             print(f"  {subtest}")
 
 
-COMMANDS = {
+COMMANDS: dict[str, Callable[[Namespace], None]] = {
     "install": install_module,
     "uninstall": uninstall_module,
     "run": run_tests,
@@ -111,7 +116,7 @@ COMMANDS = {
 }
 
 
-def main():
+def main() -> None:
     parser = ArgumentParser(description="Test various microarchitecture parameters")
     parser.add_argument(
         "-r", "--results-file", default="results.json", help="read or write results to FILE", metavar="FILE"

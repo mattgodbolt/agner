@@ -16,6 +16,7 @@ package = true
 
 [dependency-groups]
 dev = [
+    "mypy>=1.0.0",
     "pre-commit>=3.5.0",
     "ruff>=0.8.0",
 ]
@@ -44,3 +45,12 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+show_error_codes = true
+pretty = true

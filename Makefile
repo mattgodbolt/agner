@@ -1,4 +1,4 @@
-.PHONY: setup build driver clean format lint help test
+.PHONY: setup build driver clean format lint typecheck help test
 
 # Default target
 all: build
@@ -14,6 +14,7 @@ help:
 	@echo "  clean       - Remove build artifacts"
 	@echo "  format      - Format code with ruff"
 	@echo "  lint        - Lint code with ruff"
+	@echo "  typecheck   - Type check code with mypy"
 	@echo "  help        - Show this help message"
 
 setup:
@@ -47,5 +48,8 @@ clean:
 format:
 	uv run ruff format .
 
-lint:
+lint: typecheck
 	uv run ruff check .
+
+typecheck:
+	uv run mypy src/ tests/

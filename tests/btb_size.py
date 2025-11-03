@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 
-from agner.agner import run_test
+from agner.agner import Agner, CounterData, run_test
+
+# Type alias for BTB test results
+BTBResults = dict[str, list[list[float]]]
 
 
-def btb_size_test(name, num_branches, align):
+def btb_size_test(name: str, num_branches: int, align: int) -> CounterData:
     test_code = f"""
 %macro OneJump 0
 jmp %%next
@@ -29,7 +34,7 @@ nop
     return min(r, key=lambda x: x["BaClrAny"])
 
 
-def plot(xs, ys, result, name, index):
+def plot(xs: list[int], ys: list[int], result: list[list[float]], name: str, index: int | None) -> None:
     if index:
         ax = plt.subplot(2, 2, index)
     else:
@@ -48,11 +53,11 @@ def plot(xs, ys, result, name, index):
     plt.colorbar()
 
 
-def btb_test(nums, aligns, name):
-    resteer = []
-    early = []
-    late = []
-    core = []
+def btb_test(nums: list[int] | range, aligns: list[int], name: str) -> BTBResults:
+    resteer: list[list[float]] = []
+    early: list[list[float]] = []
+    late: list[list[float]] = []
+    core: list[list[float]] = []
     for align in aligns:
         resteer.append([])
         early.append([])
@@ -68,32 +73,32 @@ def btb_test(nums, aligns, name):
     return {"resteer": resteer, "early": early, "late": late, "core": core}
 
 
-def btb_plot(nums, aligns, name, results, alt):
+def btb_plot(nums: list[int] | range, aligns: list[int], name: str, results: BTBResults, alt: bool) -> None:
     fig = plt.figure()
     locs, labels = plt.xticks()
     plt.setp(labels, rotation=90)
     plt.title(name)
-    fig.canvas.set_window_title(name)
+    fig.canvas.set_window_title(name)  # type: ignore[attr-defined]
     if alt:
-        plot(nums, aligns, results["resteer"], "Front-end re-steers", 0)
+        plot(list(nums), aligns, results["resteer"], "Front-end re-steers", 0)
     else:
-        plot(nums, aligns, results["resteer"], "Front-end re-steers", 1)
-        plot(nums, aligns, results["early"], "Early clears", 2)
-        plot(nums, aligns, results["late"], "Late clears", 3)
-        plot(nums, aligns, results["core"], "Core cycles/branch", 4)
+        plot(list(nums), aligns, results["resteer"], "Front-end re-steers", 1)
+        plot(list(nums), aligns, results["early"], "Early clears", 2)
+        plot(list(nums), aligns, results["late"], "Late clears", 3)
+        plot(list(nums), aligns, results["core"], "Core cycles/branch", 4)
 
 
-def add_test(agner, nums, aligns, name):
-    def test():
+def add_test(agner: Agner, nums: list[int] | range, aligns: list[int], name: str) -> None:
+    def test() -> BTBResults:
         return btb_test(nums, aligns, name)
 
-    def plot_fn(results, alt):
+    def plot_fn(results: BTBResults, alt: bool) -> None:
         return btb_plot(nums, aligns, name, results, alt)
 
     agner.add_test(name, test, plot_fn)
 
 
-def add_tests(agner):
+def add_tests(agner: Agner) -> None:
     # attempt to find total size
     add_test(agner, range(512, 9000, 512), [2, 4, 8, 16, 32, 64], "Total size")
 
