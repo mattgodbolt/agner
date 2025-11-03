@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 from agner.agner import Agner
+from agner.counters import get_counter_db
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 TEST_PYS = sorted([os.path.splitext(os.path.basename(x))[0] for x in glob.glob(os.path.join(ROOT, "tests", "*.py"))])
@@ -106,6 +107,55 @@ def list_tests(args: Namespace) -> None:
             print(f"  {subtest}")
 
 
+def counters_command(args: Namespace) -> None:
+    """Handle counter management commands"""
+    if not args.test:
+        print("Error: counters command requires a subcommand")
+        print("Available subcommands:")
+        print("  list          - List all supported counters")
+        print("  check <ids>   - Check if specific counter IDs are supported")
+        sys.exit(1)
+
+    subcommand = args.test[0]
+    db = get_counter_db()
+
+    if subcommand == "list":
+        print("Supported counters on this CPU:")
+        print(f"{'ID':<6} {'Name':<12} {'Scheme':<8} {'Family'}")
+        print("-" * 50)
+        for counter in db.list_supported_counters():
+            print(f"{counter.counter_id:<6} {counter.name:<12} 0x{counter.scheme:02x}     0x{counter.family:02x}")
+
+    elif subcommand == "check":
+        if len(args.test) < 2:
+            print("Error: check requires counter IDs")
+            print("Usage: agner counters check <id1> [id2] [id3] ...")
+            sys.exit(1)
+
+        # Parse counter IDs (can be int or string names)
+        counter_ids = []
+        for arg in args.test[1:]:
+            try:
+                counter_ids.append(int(arg))
+            except ValueError:
+                counter_ids.append(arg)
+
+        valid_ids, errors = db.validate_counters(counter_ids)
+
+        if valid_ids:
+            print(f"Supported counters: {valid_ids}")
+        if errors:
+            print("\nUnsupported counters:")
+            for error in errors:
+                print(f"  - {error}")
+            sys.exit(1)
+
+    else:
+        print(f"Error: unknown subcommand '{subcommand}'")
+        print("Available subcommands: list, check")
+        sys.exit(1)
+
+
 COMMANDS: dict[str, Callable[[Namespace], None]] = {
     "install": install_module,
     "uninstall": uninstall_module,
@@ -113,6 +163,7 @@ COMMANDS: dict[str, Callable[[Namespace], None]] = {
     "test_only": test_only,
     "plot": plot,
     "list": list_tests,
+    "counters": counters_command,
 }
 
 
