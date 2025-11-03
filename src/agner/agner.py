@@ -102,7 +102,7 @@ def run_test(test, counters, init_once="", init_each="", repetitions=3, procs=1)
         ]
     )
     subprocess.check_call(["g++", "-o", "out/test", "out/a64.o", "out/b64.o", "-lpthread"])
-    result = subprocess.check_output(["out/test"])
+    result = subprocess.check_output(["out/test"], text=True)
     results = []
     header = None
     for line in result.split("\n"):
