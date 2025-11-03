@@ -1,4 +1,4 @@
-//                       MSRdrv.c                     © 2015-11-27 Agner Fog
+//                       MSRdrv.c                     ï¿½ 2015-11-27 Agner Fog
 
 // Device driver for access to Model-specific registers and control registers
 // in Linux (32 and 64 bit x86 platform) 
@@ -6,7 +6,7 @@
 // Modified 2011-06-08 for changed IOCTL
 // Modified 2015-11-27 for using copy_from_user to access application memory space
 
-// © 2010-2015 GNU General Public License www.gnu.org/licences
+// ï¿½ 2010-2015 GNU General Public License www.gnu.org/licences
 
 #include <linux/init.h>
 #include <linux/module.h>
@@ -118,7 +118,9 @@ static long MSRdrv_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
 #ifdef ACCESSPROBLEM   // use this if driver cannot access user memory. this occurs rarely
 
     struct SMSRInOut commands[MAX_QUE_ENTRIES];
-    raw_copy_from_user(commands, commandp, sizeof(commands));
+    if (raw_copy_from_user(commands, commandp, sizeof(commands))) {
+        return -EFAULT;  // Bad address
+    }
 
 #else
 #define commands commandp
@@ -176,7 +178,9 @@ static long MSRdrv_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
 
 #ifdef ACCESSPROBLEM   // use this if driver cannot access user memory. this occurs rarely
 
-       raw_copy_to_user(commandp, commands, sizeof(commands));
+       if (raw_copy_to_user(commandp, commands, sizeof(commands))) {
+           return -EFAULT;  // Bad address
+       }
 
 #endif
 
