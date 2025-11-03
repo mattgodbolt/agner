@@ -29,8 +29,7 @@ agner (Python CLI)
 
 ### Prerequisites
 
-- Python 3.9+
-- uv (for Python package management)
+- uv
 - g++ (C++ compiler)
 - nasm (Netwide Assembler)
 - make
@@ -75,7 +74,7 @@ uv run python agner list
 uv run python agner run
 
 # Run specific test
-uv run python agner run branch.Ahead_not_taken
+uv run python agner run "branch.Ahead not taken"
 
 # Run test family with wildcard
 uv run python agner run "branch.*"

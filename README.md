@@ -16,7 +16,6 @@ Based very heavily on [Agner Fog](http://www.agner.org)'s [test programs](http:/
 
 ### Prerequisites
 
-- Python 3.9+
 - uv (install via `curl -LsSf https://astral.sh/uv/install.sh | sh`)
 - g++ compiler
 - nasm assembler
@@ -46,7 +45,7 @@ uv run agner list
 uv run agner run
 
 # Run specific test
-uv run agner run branch.Ahead_not_taken
+uv run agner run "branch.Ahead not taken"
 
 # Save results to JSON
 uv run agner test_only -r results.json
