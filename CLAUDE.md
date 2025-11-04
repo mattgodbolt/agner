@@ -15,13 +15,17 @@ Agner is a suite of tools for investigating x86 CPU microarchitecture performanc
 
 ```
 agner (Python CLI)
-  ├─> lib/agner.py (Test framework)
-  │   ├─> Dynamically compiles C++ harness (PMCTestA.cpp)
-  │   ├─> Generates assembly test code (PMCTestB64.nasm)
-  │   └─> Links and executes tests
+  ├─> src/agner/agner.py (Test framework)
+  │   ├─> Generates .inc files (test code, counters, params)
+  │   ├─> Invokes Make to build pmctest binary
+  │   └─> Executes tests and collects results
   ├─> tests/*.py (Test definitions)
   │   ├─> branch.py - Branch prediction tests
   │   └─> btb_size.py - BTB size/configuration tests
+  ├─> src/Makefile (Build system)
+  │   ├─> Compiles C++ harness (PMCTestA.cpp + shared modules)
+  │   ├─> Assembles test code (PMCTestB64.nasm)
+  │   └─> Links pmctest binary
   └─> src/driver/ (Linux kernel module for MSR access)
 ```
 
@@ -102,15 +106,20 @@ uv run python agner plot --png "plot_{test}_{subtest}.png"
    - Each test generates x86-64 assembly code
    - Specifies which PMC counters to read
 
-2. **Dynamic Compilation** (`lib/agner.py:run_test()`)
-   - Writes assembly test code to `src/out/test.inc`
-   - Writes PMC counter list to `src/out/counters.inc`
-   - Compiles C++ harness: `g++ -O2 PMCTestA.cpp -o out/a64.o`
-   - Assembles test code: `nasm -f elf64 PMCTestB64.nasm -o out/b64.o`
-   - Links: `g++ -o out/test out/a64.o out/b64.o -lpthread`
+2. **Dynamic Compilation** (`src/agner/agner.py:run_test()`)
+   - Generates configuration files in `src/out/`:
+     - `params.inc`: Test parameters (REPETITIONS, NUM_THREADS)
+     - `test.inc`: Assembly test code
+     - `counters.inc`: PMC counter list
+     - `init_once.inc`, `init_each.inc`: Initialization code
+   - Invokes `make out/pmctest` which:
+     - Compiles C++ objects (a64.o, CounterDefinitions.o, CPUDetection.o)
+     - Assembles test code (b64.o) with all .inc files as dependencies
+     - Links final binary (pmctest)
+   - Make's dependency tracking rebuilds only what changed
 
 3. **Execution**
-   - Runs compiled test binary
+   - Runs compiled `out/pmctest` binary
    - Accesses MSRs via `/dev/MSRdrv` kernel driver
    - Returns PMC counter values as CSV
 
@@ -120,11 +129,14 @@ uv run python agner plot --png "plot_{test}_{subtest}.png"
 
 ### Key Files
 
-- **agner_main.py**: Main CLI entry point
-- **lib/agner.py**: Test framework and dynamic compilation
+- **src/agner/main.py**: Main CLI entry point
+- **src/agner/agner.py**: Test framework and test orchestration
 - **src/PMCTestA.cpp**: C++ test harness (sets up PMCs, runs test code)
-- **src/PMCTestB64.nasm**: Assembly test framework (includes generated test.inc)
+- **src/PMCTestB64.nasm**: Assembly test framework (includes generated .inc files)
 - **src/PMCTest.h**: PMC definitions and test framework interface
+- **src/CounterDefinitions.cpp**: PMC counter event definitions (auto-generated)
+- **src/CPUDetection.cpp**: CPU vendor/family/scheme detection (shared)
+- **src/Makefile**: Build rules for all C++/assembly components
 - **src/driver/MSRdrv.c**: Linux kernel module for MSR access
 
 ## Code Conventions

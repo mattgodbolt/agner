@@ -106,7 +106,6 @@ def run_test(
 ) -> TestResults:
     os.chdir(os.path.join(THIS_DIR, ".."))
     sys.stdout.flush()
-    subprocess.check_call(["make", "-s", "out/a64.o", "out/CounterDefinitions.o", "out/CPUDetection.o"])
 
     # Convert counter names to IDs and validate
     db = get_counter_db()
@@ -115,38 +114,28 @@ def run_test(
         error_msg = "Counter validation failed:\n" + "\n".join(f"  - {err}" for err in errors)
         raise ValueError(error_msg)
 
-    with open("out/counters.inc", "w") as cf:
-        [cf.write(f"    DD {counter}\n") for counter in counter_ids]
+    # Generate all .inc files
+    with open("out/params.inc", "w") as f:
+        f.write(f"%define REPETITIONS {repetitions}\n")
+        f.write(f"%define NUM_THREADS {procs}\n")
 
-    with open("out/test.inc", "w") as tf:
-        tf.write(test)
+    with open("out/counters.inc", "w") as f:
+        [f.write(f"    DD {counter}\n") for counter in counter_ids]
 
-    with open("out/init_once.inc", "w") as init_f:
-        init_f.write(init_once)
+    with open("out/test.inc", "w") as f:
+        f.write(test)
 
-    with open("out/init_each.inc", "w") as init_f:
-        init_f.write(init_each)
+    with open("out/init_once.inc", "w") as f:
+        f.write(init_once)
 
-    subprocess.check_call(
-        [
-            "nasm",
-            "-f",
-            "elf64",
-            "-l",
-            "out/b64.lst",
-            "-I",
-            "out/",
-            "-o",
-            "out/b64.o",
-            "-D",
-            f"REPETITIONS={repetitions}",
-            "-D",
-            f"NUM_THREADS={procs}",
-            "PMCTestB64.nasm",
-        ]
-    )
-    subprocess.check_call(["g++", "-o", "out/test", "out/a64.o", "out/CounterDefinitions.o", "out/CPUDetection.o", "out/b64.o", "-lpthread"])
-    result = subprocess.check_output(["out/test"], text=True)
+    with open("out/init_each.inc", "w") as f:
+        f.write(init_each)
+
+    # Let Make handle all compilation and linking
+    subprocess.check_call(["make", "-s", "out/pmctest"])
+
+    # Run test
+    result = subprocess.check_output(["out/pmctest"], text=True)
     results: TestResults = []
     header: list[str] | None = None
     for line in result.split("\n"):
