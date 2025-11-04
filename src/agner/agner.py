@@ -106,7 +106,7 @@ def run_test(
 ) -> TestResults:
     os.chdir(os.path.join(THIS_DIR, ".."))
     sys.stdout.flush()
-    subprocess.check_call(["make", "-s", "out/a64.o"])
+    subprocess.check_call(["make", "-s", "out/a64.o", "out/CounterDefinitions.o"])
 
     # Convert counter names to IDs and validate
     db = get_counter_db()
@@ -145,7 +145,7 @@ def run_test(
             "PMCTestB64.nasm",
         ]
     )
-    subprocess.check_call(["g++", "-o", "out/test", "out/a64.o", "out/b64.o", "-lpthread"])
+    subprocess.check_call(["g++", "-o", "out/test", "out/a64.o", "out/CounterDefinitions.o", "out/b64.o", "-lpthread"])
     result = subprocess.check_output(["out/test"], text=True)
     results: TestResults = []
     header: list[str] | None = None

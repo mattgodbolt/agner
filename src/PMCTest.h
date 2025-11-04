@@ -172,7 +172,7 @@ extern "C" {
 
 extern "C" {
 
-    extern SCounterDefinition CounterDefinitions[]; // List of all possible counters, in PMCTestA.cpp
+    extern SCounterDefinition CounterDefinitions[];
 
     extern int NumThreads;                  // number of threads
     // performance counters used

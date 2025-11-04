@@ -7,9 +7,6 @@
 #include "PMCTest.h"
 #include <stdio.h>
 
-// CounterDefinitions array is defined in PMCTestA.cpp
-extern SCounterDefinition CounterDefinitions[];
-
 // Simple CPU detection - subset of CCounters functionality
 class SimpleCPU {
 private:
