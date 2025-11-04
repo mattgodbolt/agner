@@ -201,14 +201,48 @@ SCounterDefinition CounterDefinitions[] = {
     // Intel Broadwell, Skylake, Kaby/Coffee/Comet Lake, Ice Lake, Tiger Lake:
     // These architectures share the same PMC architecture (S_ID3) and similar event encodings
     // Based on Intel perfmon JSON data from https://github.com/intel/perfmon
+    // Auto-generated with: make update-counters
     //  id   scheme  cpu         countregs eventreg event  mask   name
-    {1,   S_ID3, (EProcFamily)(INTEL_BROADWELL|INTEL_SKYLAKE|INTEL_KABYLAKE|INTEL_ICELAKE|INTEL_TIGERLAKE), 0x40000002, 0, 0, 0, 0, "Core cyc"}, // Core clock cycles (fixed counter)
-    {9,   S_ID3, (EProcFamily)(INTEL_BROADWELL|INTEL_SKYLAKE|INTEL_KABYLAKE|INTEL_ICELAKE|INTEL_TIGERLAKE), 0x40000000, 0, 0, 0, 0, "Instruct"}, // Instructions retired (fixed counter)
-    {207, S_ID3, (EProcFamily)(INTEL_BROADWELL|INTEL_SKYLAKE|INTEL_KABYLAKE|INTEL_ICELAKE|INTEL_TIGERLAKE), 0, 3, 0, 0xc5, 0x00, "BrMispred"}, // BR_MISP_RETIRED.ALL_BRANCHES
-    {410, S_ID3, (EProcFamily)(INTEL_BROADWELL|INTEL_SKYLAKE|INTEL_KABYLAKE|INTEL_ICELAKE|INTEL_TIGERLAKE), 0, 3, 0, 0xe6, 0x01, "BaClrAny"}, // BACLEARS.ANY
-    {411, S_ID3, (EProcFamily)(INTEL_BROADWELL|INTEL_SKYLAKE|INTEL_KABYLAKE|INTEL_ICELAKE|INTEL_TIGERLAKE), 0, 3, 0, 0x0d, 0x80, "ClrRestr"}, // INT_MISC.CLEAR_RESTEER_CYCLES
+    // INTEL_BROADWELL (Models: 0x3D, 0x47, 0x4F, 0x56)
+    {9, S_ID3, INTEL_BROADWELL, 0x40000000, 0, 0, 0x00, 0x00, "Instruct"}, // INST_RETIRED.ANY
+    {1, S_ID3, INTEL_BROADWELL, 0x40000002, 0, 0, 0x00, 0x00, "Core cyc"}, // CPU_CLK_UNHALTED.THREAD
+    {207, S_ID3, INTEL_BROADWELL, 0, 3, 0, 0xc5, 0x00, "BrMispred"}, // BR_MISP_RETIRED.ALL_BRANCHES
+    {201, S_ID3, INTEL_BROADWELL, 0, 3, 0, 0xc4, 0x00, "BrTaken"}, // BR_INST_RETIRED.ALL_BRANCHES
+    {410, S_ID3, INTEL_BROADWELL, 0, 3, 0, 0xe6, 0x1f, "BaClrAny"}, // BACLEARS.ANY
+    // INTEL_SKYLAKE (Models: 0x4E, 0x5E, 0x55)
+    {9, S_ID3, INTEL_SKYLAKE, 0x40000000, 0, 0, 0x00, 0x00, "Instruct"}, // INST_RETIRED.ANY
+    {1, S_ID3, INTEL_SKYLAKE, 0x40000002, 0, 0, 0x00, 0x00, "Core cyc"}, // CPU_CLK_UNHALTED.THREAD
+    {207, S_ID3, INTEL_SKYLAKE, 0, 3, 0, 0xc5, 0x00, "BrMispred"}, // BR_MISP_RETIRED.ALL_BRANCHES
+    {201, S_ID3, INTEL_SKYLAKE, 0, 3, 0, 0xc4, 0x00, "BrTaken"}, // BR_INST_RETIRED.ALL_BRANCHES
+    {410, S_ID3, INTEL_SKYLAKE, 0, 3, 0, 0xe6, 0x01, "BaClrAny"}, // BACLEARS.ANY
+    {411, S_ID3, INTEL_SKYLAKE, 0, 3, 0, 0x0d, 0x80, "ClrRestr"}, // INT_MISC.CLEAR_RESTEER_CYCLES
+    {412, S_ID3, INTEL_SKYLAKE, 0, 3, 0, 0x0d, 0x01, "ClrCount"}, // INT_MISC.CLEARS_COUNT
+    // INTEL_KABYLAKE (Models: 0x8E, 0x9E, 0xA5, 0xA6)
+    {9, S_ID3, INTEL_KABYLAKE, 0x40000000, 0, 0, 0x00, 0x00, "Instruct"}, // INST_RETIRED.ANY
+    {1, S_ID3, INTEL_KABYLAKE, 0x40000002, 0, 0, 0x00, 0x00, "Core cyc"}, // CPU_CLK_UNHALTED.THREAD
+    {207, S_ID3, INTEL_KABYLAKE, 0, 3, 0, 0xc5, 0x00, "BrMispred"}, // BR_MISP_RETIRED.ALL_BRANCHES
+    {201, S_ID3, INTEL_KABYLAKE, 0, 3, 0, 0xc4, 0x00, "BrTaken"}, // BR_INST_RETIRED.ALL_BRANCHES
+    {410, S_ID3, INTEL_KABYLAKE, 0, 3, 0, 0xe6, 0x01, "BaClrAny"}, // BACLEARS.ANY
+    {411, S_ID3, INTEL_KABYLAKE, 0, 3, 0, 0x0d, 0x80, "ClrRestr"}, // INT_MISC.CLEAR_RESTEER_CYCLES
+    {412, S_ID3, INTEL_KABYLAKE, 0, 3, 0, 0x0d, 0x01, "ClrCount"}, // INT_MISC.CLEARS_COUNT
+    // INTEL_ICELAKE (Models: 0x7D, 0x7E, 0x6A, 0x6C)
+    {9, S_ID3, INTEL_ICELAKE, 0x40000000, 0, 0, 0x00, 0x00, "Instruct"}, // INST_RETIRED.ANY
+    {1, S_ID3, INTEL_ICELAKE, 0x40000002, 0, 0, 0x00, 0x00, "Core cyc"}, // CPU_CLK_UNHALTED.THREAD
+    {207, S_ID3, INTEL_ICELAKE, 0, 3, 0, 0xc5, 0x00, "BrMispred"}, // BR_MISP_RETIRED.ALL_BRANCHES
+    {201, S_ID3, INTEL_ICELAKE, 0, 3, 0, 0xc4, 0x00, "BrTaken"}, // BR_INST_RETIRED.ALL_BRANCHES
+    {410, S_ID3, INTEL_ICELAKE, 0, 3, 0, 0xe6, 0x01, "BaClrAny"}, // BACLEARS.ANY
+    {411, S_ID3, INTEL_ICELAKE, 0, 3, 0, 0x0d, 0x80, "ClrRestr"}, // INT_MISC.CLEAR_RESTEER_CYCLES
+    {412, S_ID3, INTEL_ICELAKE, 0, 3, 0, 0x0d, 0x01, "ClrCount"}, // INT_MISC.CLEARS_COUNT
+    // INTEL_TIGERLAKE (Models: 0x8C, 0x8D)
+    {9, S_ID3, INTEL_TIGERLAKE, 0x40000000, 0, 0, 0x00, 0x00, "Instruct"}, // INST_RETIRED.ANY
+    {1, S_ID3, INTEL_TIGERLAKE, 0x40000002, 0, 0, 0x00, 0x00, "Core cyc"}, // CPU_CLK_UNHALTED.THREAD
+    {207, S_ID3, INTEL_TIGERLAKE, 0, 3, 0, 0xc5, 0x00, "BrMispred"}, // BR_MISP_RETIRED.ALL_BRANCHES
+    {201, S_ID3, INTEL_TIGERLAKE, 0, 3, 0, 0xc4, 0x00, "BrTaken"}, // BR_INST_RETIRED.ALL_BRANCHES
+    {410, S_ID3, INTEL_TIGERLAKE, 0, 3, 0, 0xe6, 0x01, "BaClrAny"}, // BACLEARS.ANY
+    {411, S_ID3, INTEL_TIGERLAKE, 0, 3, 0, 0x0d, 0x80, "ClrRestr"}, // INT_MISC.CLEAR_RESTEER_CYCLES
+    {412, S_ID3, INTEL_TIGERLAKE, 0, 3, 0, 0x0d, 0x01, "ClrCount"}, // INT_MISC.CLEARS_COUNT
 
-    // Intel Atom:
+        // Intel Atom:
     // The first counter is fixed-function counter having its own register,
     // The rest of the counters are competing for the same two counter registers.
     //  id   scheme  cpu         countregs eventreg event  mask   name

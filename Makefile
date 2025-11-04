@@ -1,4 +1,4 @@
-.PHONY: setup build driver clean format lint typecheck help test
+.PHONY: setup build driver clean format lint typecheck help test update-counters
 
 # Default target
 all: build
@@ -7,15 +7,16 @@ help:
 	@echo "Agner - x86 CPU Performance Investigation Tool"
 	@echo ""
 	@echo "Available targets:"
-	@echo "  setup       - Install Python dependencies with uv"
-	@echo "  build       - Build C++ test harness"
-	@echo "  driver      - Build and install kernel driver (requires sudo)"
-	@echo "  test        - Run all available tests (requires driver)"
-	@echo "  clean       - Remove build artifacts"
-	@echo "  format      - Format code with ruff"
-	@echo "  lint        - Lint code with ruff"
-	@echo "  typecheck   - Type check code with mypy"
-	@echo "  help        - Show this help message"
+	@echo "  setup          - Install Python dependencies with uv"
+	@echo "  build          - Build C++ test harness"
+	@echo "  driver         - Build and install kernel driver (requires sudo)"
+	@echo "  test           - Run all available tests (requires driver)"
+	@echo "  update-counters- Download and display Intel perfmon counter definitions"
+	@echo "  clean          - Remove build artifacts"
+	@echo "  format         - Format code with ruff"
+	@echo "  lint           - Lint code with ruff"
+	@echo "  typecheck      - Type check code with mypy"
+	@echo "  help           - Show this help message"
 
 setup:
 	uv sync
@@ -53,3 +54,9 @@ lint: typecheck
 
 typecheck:
 	uv run mypy src/ tests/
+
+update-counters:
+	@echo "Downloading Intel perfmon counter definitions..."
+	@echo "Note: This downloads data from https://github.com/intel/perfmon"
+	@echo ""
+	uv run python tools/update_counters.py

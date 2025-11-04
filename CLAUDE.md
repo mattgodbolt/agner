@@ -54,14 +54,15 @@ make driver
 ### Common Operations
 
 ```bash
-make setup          # Install Python dependencies with uv
-make build          # Build C++ test harness
-make driver         # Build and install kernel driver (sudo)
+make setup             # Install Python dependencies with uv
+make build             # Build C++ test harness
+make driver            # Build and install kernel driver (sudo)
 make uninstall-driver  # Remove kernel driver (sudo)
-make clean          # Remove build artifacts
-make format         # Format code with ruff
-make lint           # Lint code with ruff
-make help           # Show all available targets
+make update-counters   # Download Intel perfmon counter definitions
+make clean             # Remove build artifacts
+make format            # Format code with ruff
+make lint              # Lint code with ruff
+make help              # Show all available targets
 ```
 
 ### Running Tests
@@ -250,6 +251,43 @@ sudo chmod 666 /dev/MSRdrv  # Or add user to device group
 - MSRs require ring 0 (kernel mode) access
 - Safer than modifying /dev/mem
 - Isolated interface for PMC operations
+
+## Updating Counter Definitions
+
+The project includes a tool to automatically download and generate counter definitions from Intel's official perfmon repository:
+
+```bash
+# Download and display counter definitions for all supported architectures
+make update-counters
+
+# Or run directly with uv for specific architecture
+uv run python tools/update_counters.py --arch INTEL_SKYLAKE
+```
+
+### How It Works
+
+1. Downloads JSON event files from https://github.com/intel/perfmon
+2. Parses events for each architecture (Broadwell, Skylake, Kaby/Coffee/Comet Lake, Ice Lake, Tiger Lake)
+3. Extracts relevant counters (instructions, cycles, branch events, clears)
+4. Generates C++ counter definitions ready for `CounterDefinitions.cpp`
+
+### Adding New Counters
+
+To track additional events:
+
+1. Add event mapping to `INTERESTING_EVENTS` dict in `tools/update_counters.py`
+2. Assign counter ID and register configuration in `generate_counter_definitions()`
+3. Run `make update-counters` to automatically update `src/CounterDefinitions.cpp`
+4. Review changes with `git diff src/CounterDefinitions.cpp`
+5. Rebuild with `make build` to incorporate new counters
+
+### Supported Architectures
+
+- INTEL_BROADWELL (5th gen, Models: 0x3D, 0x47, 0x4F, 0x56)
+- INTEL_SKYLAKE (6th gen, Models: 0x4E, 0x5E, 0x55)
+- INTEL_KABYLAKE (7th-10th gen 14nm, Models: 0x8E, 0x9E, 0xA5, 0xA6)
+- INTEL_ICELAKE (10th gen 10nm, Models: 0x7D, 0x7E, 0x6A, 0x6C)
+- INTEL_TIGERLAKE (11th gen, Models: 0x8C, 0x8D)
 
 ## Future Improvements
 
