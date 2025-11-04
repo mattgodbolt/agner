@@ -139,9 +139,6 @@ public:
     void Put2 (int num_threads,              // put record into multiple stop queues
         EMSR_COMMAND msr_command, unsigned int register_number,
         unsigned int value_lo, unsigned int value_hi = 0);
-    void GetProcessorVendor();               // get microprocessor vendor
-    void GetProcessorFamily();               // get microprocessor family
-    void GetPMCScheme();                     // get PMC scheme
 protected:
     CMSRInOutQue queue1[MAXTHREADS];         // que of MSR commands to do by StartCounters()
     CMSRInOutQue queue2[MAXTHREADS];         // que of MSR commands to do by StopCounters()

@@ -15,6 +15,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "PMCTest.h"
+#include "CPUDetection.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -260,9 +261,28 @@ void CCounters::QueueCounters() {
     NumCounterDefinitions = n;
 
     // Get processor information
-    GetProcessorVendor();               // get microprocessor vendor
-    GetProcessorFamily();               // get microprocessor family
-    GetPMCScheme();                     // get PMC scheme
+    CPUDetection cpuDetect;
+    MVendor = cpuDetect.GetVendor();
+    MFamily = cpuDetect.GetFamily();
+    MScheme = cpuDetect.GetScheme();
+
+    // Get additional PMC information (NumPMCs, NumFixedPMCs)
+    NumPMCs = 2;
+    NumFixedPMCs = 0;
+    if (MVendor == AMD) {
+        NumPMCs = 4;
+    }
+    else if (MVendor == INTEL) {
+        int CpuIdOutput[4];
+        Cpuid(CpuIdOutput, 0);
+        if (CpuIdOutput[0] >= 0x0A) {
+            Cpuid(CpuIdOutput, 0x0A);
+            if (CpuIdOutput[0] & 0xFF) {
+                NumPMCs = (CpuIdOutput[0] >> 8) & 0xFF;
+                NumFixedPMCs = CpuIdOutput[3] & 0x1F;
+            }
+        }
+    }
 
     if (UsePMC) {   
         // Get all counter requests
@@ -343,157 +363,6 @@ void CCounters::StartCounters(int ThreadNum) {
 void CCounters::StopCounters(int ThreadNum) {
     if (UsePMC) {
         msr.AccessRegisters(queue2[ThreadNum]);
-    }
-}
-
-void CCounters::GetProcessorVendor() {
-    // get microprocessor vendor
-    int CpuIdOutput[4];
-
-    // Call cpuid function 0
-    Cpuid(CpuIdOutput, 0);
-
-    // Interpret vendor string
-    MVendor = VENDOR_UNKNOWN;
-    if (CpuIdOutput[2] == 0x6C65746E) MVendor = INTEL;  // Intel "GenuineIntel"
-    if (CpuIdOutput[2] == 0x444D4163) MVendor = AMD;    // AMD   "AuthenticAMD"
-    if (CpuIdOutput[1] == 0x746E6543) MVendor = VIA;    // VIA   "CentaurHauls"
-}
-
-void CCounters::GetProcessorFamily() {
-    // get microprocessor family
-    int CpuIdOutput[4];
-    int Family, Model;
-
-    MFamily = P_UNKNOWN;                // default = unknown
-
-    // Call cpuid function 0
-    Cpuid(CpuIdOutput, 0);
-    if (CpuIdOutput[0] == 0) return;     // cpuid function 1 not supported
-
-    // call cpuid function 1 to get family and model number
-    Cpuid(CpuIdOutput, 1);
-    Family = ((CpuIdOutput[0] >> 8) & 0x0F) + ((CpuIdOutput[0] >> 20) & 0xFF);   // family code
-    Model  = ((CpuIdOutput[0] >> 4) & 0x0F) | ((CpuIdOutput[0] >> 12) & 0xF0);   // model code
-    // printf("\nCPU family 0x%X, model 0x%X\n", Family, Model);
-
-    if (MVendor == INTEL)  {
-        // Intel processor
-        if (Family <  5)    MFamily = P_UNKNOWN;        // less than Pentium
-        if (Family == 5)    MFamily = INTEL_P1MMX;      // pentium 1 or mmx
-        if (Family == 0x0F) MFamily = INTEL_P4;         // pentium 4 or other netburst
-        if (Family == 6) {                              // P6 family and later
-            // check model
-            MFamily = INTEL_P23;                         // Pentium 2 or 3
-            if (Model == 0x09) MFamily = INTEL_PM;       // Pentium M
-            if (Model == 0x0D) MFamily = INTEL_PM;       // Pentium M
-            if (Model == 0x0E) MFamily = INTEL_CORE;     // Core 1
-            if (Model == 0x0F) MFamily = INTEL_CORE2;    // Core 2, 65 nm
-            if (Model == 0x16) MFamily = INTEL_CORE2;    // Core 2, 65 nm celeron
-            if (Model == 0x17) MFamily = INTEL_CORE2;    // Core 2, 45 nm
-            if (Model == 0x1A) MFamily = INTEL_7;        // Core i7, Nehalem
-            if (Model == 0x1C) MFamily = INTEL_ATOM;     // Atom
-            if (Model >= 0x1D) MFamily = INTEL_7;        // Nehalem, Sandy Bridge
-            if (Model == 0x3A || Model == 0x3E) MFamily = INTEL_IVY; // Ivy Bridge
-
-            // Haswell (4th gen): 0x3C, 0x3F, 0x45, 0x46
-            if (Model == 0x3C || Model == 0x3F || Model == 0x45 || Model == 0x46)
-                MFamily = INTEL_HASW;
-
-            // Broadwell (5th gen): 0x3D, 0x47, 0x4F, 0x56
-            if (Model == 0x3D || Model == 0x47 || Model == 0x4F || Model == 0x56)
-                MFamily = INTEL_BROADWELL;
-
-            // Skylake (6th gen): 0x4E, 0x5E, 0x55 (includes server)
-            if (Model == 0x4E || Model == 0x5E || Model == 0x55)
-                MFamily = INTEL_SKYLAKE;
-
-            // Kaby/Coffee/Comet Lake (7th-10th gen, 14nm): 0x8E, 0x9E, 0xA5, 0xA6
-            if (Model == 0x8E || Model == 0x9E || Model == 0xA5 || Model == 0xA6)
-                MFamily = INTEL_KABYLAKE;
-
-            // Ice Lake (10th gen, 10nm): 0x7D, 0x7E, 0x6A, 0x6C
-            if (Model == 0x7D || Model == 0x7E || Model == 0x6A || Model == 0x6C)
-                MFamily = INTEL_ICELAKE;
-
-            // Tiger Lake (11th gen): 0x8C, 0x8D
-            if (Model == 0x8C || Model == 0x8D)
-                MFamily = INTEL_TIGERLAKE;
-
-            // For newer/unknown models, default to Haswell as fallback
-            if (MFamily == INTEL_P23 && Model >= 0x3F)
-                MFamily = INTEL_HASW;
-        }
-    }
-
-    if (MVendor == AMD)  {
-        // AMD processor
-        MFamily = P_UNKNOWN;                            // old or unknown AMD
-        if (Family == 6)    MFamily = AMD_ATHLON;       // AMD Athlon
-        if (Family >= 0x0F && Family <= 0x14) MFamily = AMD_ATHLON64;  // Athlon 64, Opteron, etc
-        if (Family >= 0x15) MFamily = AMD_BULLD;        // Family 15h
-    }
-
-    if (MVendor == VIA)  {
-        // VIA processor
-        if (Family == 6 && Model >= 0x0F) MFamily = VIA_NANO; // VIA Nano
-    }
-}
-
-void CCounters::GetPMCScheme() {
-    // get PMC scheme
-    // Default values
-    MScheme = S_UNKNOWN;
-    NumPMCs = 2;
-    NumFixedPMCs = 0;
-
-    if (MVendor == AMD)  {
-        // AMD processor
-        MScheme = S_AMD;
-        NumPMCs = 4;
-    }
-
-    if (MVendor == VIA)  {
-        // VIA processor
-        MScheme = S_VIA;
-    }
-
-    if (MVendor == INTEL)  {
-        // Intel processor
-        int CpuIdOutput[4];
-
-        // Call cpuid function 0
-        Cpuid(CpuIdOutput, 0);
-        if (CpuIdOutput[0] >= 0x0A) {
-            // PMC scheme defined by cpuid function A
-            Cpuid(CpuIdOutput, 0x0A);
-            if (CpuIdOutput[0] & 0xFF) {
-                MScheme = EPMCScheme(S_ID1 << ((CpuIdOutput[0] & 0xFF) - 1));
-                NumPMCs = (CpuIdOutput[0] >> 8) & 0xFF;
-                //NumFixedPMCs = CpuIdOutput[0] & 0x1F;
-                NumFixedPMCs = CpuIdOutput[3] & 0x1F;
-                // printf("\nCounters:\nMScheme = 0x%X, NumPMCs = %i, NumFixedPMCs = %i\n\n", MScheme, NumPMCs, NumFixedPMCs);
-            }
-        }
-        if (MScheme == S_UNKNOWN) {
-            // PMC scheme not defined by cpuid
-            switch (MFamily) {
-            case INTEL_P1MMX:
-                MScheme = S_P1; break;
-            case INTEL_P23: case INTEL_PM:
-                MScheme = S_P2; break;
-            case INTEL_P4:
-                MScheme = S_P4; break;
-            case INTEL_CORE:
-                MScheme = S_ID1; break;
-            case INTEL_CORE2:
-                MScheme = S_ID2; break;
-            case INTEL_7: case INTEL_IVY: case INTEL_HASW: case INTEL_BROADWELL:
-            case INTEL_SKYLAKE: case INTEL_KABYLAKE: case INTEL_ICELAKE: case INTEL_TIGERLAKE:
-            case INTEL_ATOM:
-                MScheme = S_ID3; break;
-            }
-        }
     }
 }
 

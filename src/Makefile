@@ -12,10 +12,15 @@ out/CounterDefinitions.o: CounterDefinitions.cpp *.h
 	mkdir -p out
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCLUDES)
 
-# Standalone counter listing tool
-out/list-counters: list_counters_main.cpp out/CounterDefinitions.o *.h $(DRIVER_SRC)/*.h
+# CPU detection (shared by test harness and list-counters)
+out/CPUDetection.o: CPUDetection.cpp *.h $(DRIVER_SRC)/*.h
 	mkdir -p out
-	$(CXX) $(CXXFLAGS) -o $@ $< out/CounterDefinitions.o $(INCLUDES)
+	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCLUDES)
+
+# Standalone counter listing tool
+out/list-counters: list_counters_main.cpp out/CounterDefinitions.o out/CPUDetection.o *.h $(DRIVER_SRC)/*.h
+	mkdir -p out
+	$(CXX) $(CXXFLAGS) -o $@ $< out/CounterDefinitions.o out/CPUDetection.o $(INCLUDES)
 
 .PHONY: clean
 clean:
