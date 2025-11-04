@@ -242,7 +242,7 @@ SCounterDefinition CounterDefinitions[] = {
     {411, S_ID3, INTEL_TIGERLAKE, 0, 3, 0, 0x0d, 0x80, "ClrRestr"}, // INT_MISC.CLEAR_RESTEER_CYCLES
     {412, S_ID3, INTEL_TIGERLAKE, 0, 3, 0, 0x0d, 0x01, "ClrCount"}, // INT_MISC.CLEARS_COUNT
 
-        // Intel Atom:
+    // Intel Atom:
     // The first counter is fixed-function counter having its own register,
     // The rest of the counters are competing for the same two counter registers.
     //  id   scheme  cpu         countregs eventreg event  mask   name

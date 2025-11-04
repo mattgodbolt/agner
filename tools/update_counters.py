@@ -166,7 +166,7 @@ def update_counter_definitions_file(all_definitions: dict[str, list[str]], count
         new_lines.append(f"    // {arch_name} (Models: {', '.join(f'0x{m:02X}' for m in models)})")
         new_lines.extend(lines)
 
-    new_section = "\n".join(new_lines) + "\n\n    "
+    new_section = "\n".join(new_lines) + "\n\n"
 
     # Replace the section
     new_content = content[:start_idx] + new_section + content[end_idx:]

@@ -11,7 +11,7 @@
 // Run as administrator, with driver signature enforcement off.
 // See PMCTest.txt for further instructions.
 //
-// � 2000-2013 GNU General Public License www.gnu.org/licenses
+// (c) 2000-2013 GNU General Public License www.gnu.org/licenses
 //////////////////////////////////////////////////////////////////////////////
 
 #include "PMCTest.h"
